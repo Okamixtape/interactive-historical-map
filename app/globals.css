@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* MapBox Overrides */
+.mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 0.5rem;
+}
+
+.mapboxgl-popup-close-button {
+  padding: 0.5rem;
+  font-size: 1.25rem;
+  color: #6e4027;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background-color: transparent;
+  color: #a76032;
+}

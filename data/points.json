@@ -1,0 +1,87 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [1.2611, 45.8312]
+      },
+      "properties": {
+        "id": "boucherie-1",
+        "title": "Rue de la Boucherie",
+        "address": "Rue de la Boucherie, 87000 Limoges",
+        "category": "urbanisme",
+        "description": "Rue médiévale élargie lors des travaux haussmanniens de 1893.",
+        "historical": {
+          "year": 1860,
+          "imageUrl": "/archives/boucherie-1860.jpg",
+          "source": "Archives Haute-Vienne, cote 2Fi123"
+        },
+        "streetView": {
+          "latitude": 45.8312,
+          "longitude": 1.2611,
+          "heading": 120,
+          "pitch": 5,
+          "fov": 90
+        },
+        "tags": ["médiéval", "haussmann"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [1.2586, 45.8336]
+      },
+      "properties": {
+        "id": "halles-centrales",
+        "title": "Halles Centrales",
+        "address": "Place de la Motte, 87000 Limoges",
+        "category": "architecture",
+        "description": "Halles métalliques construites en 1885, inspirées du style Baltard.",
+        "historical": {
+          "year": 1890,
+          "imageUrl": "/archives/halles-1890.jpg",
+          "source": "Archives Haute-Vienne, cote 2Fi456",
+          "archiveReference": "FRAD087_2Fi456"
+        },
+        "streetView": {
+          "latitude": 45.8336,
+          "longitude": 1.2586,
+          "heading": 180,
+          "pitch": 0,
+          "fov": 90
+        },
+        "tags": ["architecture", "baltard", "marché"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [1.2667, 45.8389]
+      },
+      "properties": {
+        "id": "porcelaine-haviland",
+        "title": "Manufacture Haviland",
+        "address": "Avenue du Président Kennedy, 87000 Limoges",
+        "category": "industrie",
+        "description": "Première manufacture de porcelaine américaine en France, fondée en 1842.",
+        "historical": {
+          "year": 1920,
+          "imageUrl": "/archives/haviland-1920.jpg",
+          "source": "Archives Haviland"
+        },
+        "streetView": {
+          "latitude": 45.8389,
+          "longitude": 1.2667,
+          "heading": 270,
+          "pitch": 10,
+          "fov": 90
+        },
+        "tags": ["porcelaine", "industrie", "haviland"]
+      }
+    }
+  ]
+}
