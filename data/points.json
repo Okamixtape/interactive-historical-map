@@ -25,6 +25,12 @@
           "pitch": 5,
           "fov": 90
         },
+        "mapboxCamera": {
+          "bearing": 120,
+          "pitch": 60,
+          "zoom": 18,
+          "duration": 3000
+        },
         "tags": ["médiéval", "haussmann"]
       }
     },
@@ -53,6 +59,12 @@
           "pitch": 0,
           "fov": 90
         },
+        "mapboxCamera": {
+          "bearing": 180,
+          "pitch": 55,
+          "zoom": 17.5,
+          "duration": 3000
+        },
         "tags": ["architecture", "baltard", "marché"]
       }
     },
@@ -79,6 +91,12 @@
           "heading": 270,
           "pitch": 10,
           "fov": 90
+        },
+        "mapboxCamera": {
+          "bearing": 270,
+          "pitch": 65,
+          "zoom": 18.5,
+          "duration": 3000
         },
         "tags": ["porcelaine", "industrie", "haviland"]
       }

@@ -24,6 +24,13 @@ export interface PointProperties {
     fov?: number;       // 10-120 (default 90)
   };
 
+  mapboxCamera: {
+    bearing: number;    // 0-360° (orientation horizontale)
+    pitch: number;      // 0-85° (inclinaison verticale)
+    zoom: number;       // 0-22 (niveau de zoom)
+    duration?: number;  // ms (défaut: 3000)
+  };
+
   tags?: string[];
 }
 
