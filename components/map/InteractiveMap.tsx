@@ -116,24 +116,24 @@ function InteractiveMap({ points, onPointSelect }: Props) {
       </Map>
 
       {/* Légende */}
-      <div className="absolute bottom-8 left-8 bg-white/95 backdrop-blur-sm p-4 rounded-lg shadow-lg">
-        <h4 className="font-bold text-sm mb-2 text-heritage-bordeaux">Catégories</h4>
+      <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 bg-white/95 backdrop-blur-sm p-3 md:p-4 rounded-lg shadow-lg max-h-[40vh] overflow-y-auto">
+        <h4 className="font-bold text-xs md:text-sm mb-2 text-heritage-bordeaux">Catégories</h4>
         <div className="space-y-1 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-lg">🏛️</span>
-            <span>Urbanisme</span>
+            <span className="text-base md:text-lg">🏛️</span>
+            <span className="text-[10px] md:text-xs">Urbanisme</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-lg">🏗️</span>
-            <span>Architecture</span>
+            <span className="text-base md:text-lg">🏗️</span>
+            <span className="text-[10px] md:text-xs">Architecture</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-lg">🏭</span>
-            <span>Industrie</span>
+            <span className="text-base md:text-lg">🏭</span>
+            <span className="text-[10px] md:text-xs">Industrie</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-lg">🕰️</span>
-            <span>Patrimoine disparu</span>
+            <span className="text-base md:text-lg">🕰️</span>
+            <span className="text-[10px] md:text-xs">Patrimoine disparu</span>
           </div>
         </div>
       </div>

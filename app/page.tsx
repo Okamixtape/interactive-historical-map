@@ -28,7 +28,7 @@ export default function HomePage() {
       </header>
 
       {/* Map */}
-      <div className="w-full h-screen pt-20">
+      <div className="w-full h-screen">
         <InteractiveMap points={points} onPointSelect={setSelectedPoint} />
       </div>
 
