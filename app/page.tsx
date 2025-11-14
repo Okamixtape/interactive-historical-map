@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import InteractiveMap from '@/components/map/InteractiveMap';
+import Sidebar from '@/components/layout/Sidebar';
 import pointsData from '@/data/points.json';
 import type { PointFeature, PointCollection } from '@/lib/types';
 
@@ -11,30 +12,51 @@ const PointModal = dynamic(() => import('@/components/modal/PointModal'), {
   ssr: false,
 });
 
+type CategoryFilter = 'all' | 'urbanisme' | 'architecture' | 'industrie' | 'patrimoine-disparu';
+
 export default function HomePage() {
   const [selectedPoint, setSelectedPoint] = useState<PointFeature | null>(null);
+  const [activeFilter, setActiveFilter] = useState<CategoryFilter>('all');
   const points = (pointsData as PointCollection).features;
+
+  // Filtrer les points selon la catégorie active
+  const filteredPoints = activeFilter === 'all' 
+    ? points 
+    : points.filter(p => p.properties.category === activeFilter);
+
+  // Handler pour la sélection de POI (depuis sidebar ou marqueur)
+  const handlePOISelect = useCallback((poiId: string) => {
+    const point = points.find(p => p.properties.id === poiId);
+    if (point) {
+      setSelectedPoint(point);
+    }
+  }, [points]);
 
   return (
     <main className="relative">
-      {/* Header */}
-      <header className="absolute top-0 left-0 right-0 z-10 bg-heritage-bordeaux/95 backdrop-blur-sm text-white px-6 py-4 shadow-lg">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold">Carte Patrimoniale de Limoges</h1>
-          <p className="text-sm opacity-90 mt-1">
-            Comparez le passé et le présent de la ville
-          </p>
-        </div>
-      </header>
+      {/* Sidebar avec header intégré */}
+      <Sidebar 
+        points={points} 
+        onPOISelect={handlePOISelect}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+      />
 
       {/* Map */}
-      <div className="w-full h-screen">
-        <InteractiveMap points={points} onPointSelect={setSelectedPoint} />
+      <div 
+        role="region" 
+        aria-label="Carte interactive de Limoges"
+        className="w-full h-screen"
+      >
+        <InteractiveMap points={filteredPoints} onPointSelect={setSelectedPoint} />
       </div>
 
       {/* Modal */}
       {selectedPoint && (
-        <PointModal point={selectedPoint} onClose={() => setSelectedPoint(null)} />
+        <PointModal 
+          point={selectedPoint} 
+          onClose={() => setSelectedPoint(null)} 
+        />
       )}
     </main>
   );

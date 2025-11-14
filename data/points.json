@@ -5,100 +5,136 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [1.2611, 45.8312]
+        "coordinates": [1.271351, 45.8286817]
       },
       "properties": {
-        "id": "boucherie-1",
-        "title": "Rue de la Boucherie",
-        "address": "Rue de la Boucherie, 87000 Limoges",
+        "id": "pont-saint-etienne-1862",
+        "title": "Pont Saint-Étienne (1862)",
+        "address": "Pont Saint-Étienne, 87000 Limoges",
         "category": "urbanisme",
-        "description": "Rue médiévale élargie lors des travaux haussmanniens de 1893.",
+        "description": "Pont franchissant la Vienne dans le quartier de l'Abbessaille. Gravure de Léo Drouya montrant l'ouvrage en 1862.",
         "historical": {
-          "year": 1860,
-          "imageUrl": "/archives/boucherie-1860.jpg",
-          "source": "Archives Haute-Vienne, cote 2Fi123"
+          "year": 1862,
+          "imageUrl": "/archives/pont-saint-etienne-1862.jpg",
+          "source": "Archives Départementales de la Haute-Vienne",
+          "archiveReference": "2 Fi 8"
         },
         "streetView": {
-          "latitude": 45.8312,
-          "longitude": 1.2611,
-          "heading": 120,
-          "pitch": 5,
-          "fov": 90
-        },
-        "mapboxCamera": {
-          "bearing": 120,
-          "pitch": 60,
-          "zoom": 18,
-          "duration": 3000
-        },
-        "tags": ["médiéval", "haussmann"]
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [1.2586, 45.8336]
-      },
-      "properties": {
-        "id": "halles-centrales",
-        "title": "Halles Centrales",
-        "address": "Place de la Motte, 87000 Limoges",
-        "category": "architecture",
-        "description": "Halles métalliques construites en 1885, inspirées du style Baltard.",
-        "historical": {
-          "year": 1890,
-          "imageUrl": "/archives/halles-1890.jpg",
-          "source": "Archives Haute-Vienne, cote 2Fi456",
-          "archiveReference": "FRAD087_2Fi456"
-        },
-        "streetView": {
-          "latitude": 45.8336,
-          "longitude": 1.2586,
-          "heading": 180,
+          "latitude": 45.8286817,
+          "longitude": 1.271351,
+          "heading": 286,
           "pitch": 0,
-          "fov": 90
+          "fov": 38
         },
         "mapboxCamera": {
-          "bearing": 180,
-          "pitch": 55,
+          "bearing": 286,
+          "pitch": 60,
           "zoom": 17.5,
           "duration": 3000
         },
-        "tags": ["architecture", "baltard", "marché"]
+        "tags": ["pont", "abbessaille", "vienne", "léo-drouya", "1862"]
       }
     },
     {
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [1.2667, 45.8389]
+        "coordinates": [1.2707901, 45.8281906]
       },
       "properties": {
-        "id": "porcelaine-haviland",
-        "title": "Manufacture Haviland",
-        "address": "Avenue du Président Kennedy, 87000 Limoges",
-        "category": "industrie",
-        "description": "Première manufacture de porcelaine américaine en France, fondée en 1842.",
+        "id": "pont-saint-etienne-1914",
+        "title": "Pont Saint-Étienne - L'Abbessaille (1914)",
+        "address": "Pont Saint-Étienne, 87000 Limoges",
+        "category": "urbanisme",
+        "description": "Carte postale du quartier de l'Abbessaille et du Pont Saint-Étienne, datée du 28 août 1914, au début de la Première Guerre mondiale.",
         "historical": {
-          "year": 1920,
-          "imageUrl": "/archives/haviland-1920.jpg",
-          "source": "Archives Haviland"
+          "year": 1914,
+          "imageUrl": "/archives/pont-saint-etienne-1914.jpg",
+          "source": "Archives Départementales de la Haute-Vienne",
+          "archiveReference": "46 Fi 9235"
         },
         "streetView": {
-          "latitude": 45.8389,
-          "longitude": 1.2667,
-          "heading": 270,
-          "pitch": 10,
-          "fov": 90
+          "latitude": 45.8281906,
+          "longitude": 1.2707901,
+          "heading": 325,
+          "pitch": -3,
+          "fov": 24
         },
         "mapboxCamera": {
-          "bearing": 270,
-          "pitch": 65,
-          "zoom": 18.5,
+          "bearing": 325,
+          "pitch": 55,
+          "zoom": 18,
           "duration": 3000
         },
-        "tags": ["porcelaine", "industrie", "haviland"]
+        "tags": ["pont", "abbessaille", "carte-postale", "1914", "première-guerre-mondiale"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [1.2679901, 45.8297006]
+      },
+      "properties": {
+        "id": "cathedrale-abside-19e",
+        "title": "Cathédrale Saint-Étienne - Abside",
+        "address": "Place de la Cathédrale, 87000 Limoges",
+        "category": "architecture",
+        "description": "Vue de l'abside de la cathédrale Saint-Étienne depuis le vieux quartier. Monument gothique construit entre le XIIIe et le XVIe siècle.",
+        "historical": {
+          "year": 1900,
+          "imageUrl": "/archives/cathedrale-abside-19e.jpg",
+          "source": "Archives Départementales de la Haute-Vienne",
+          "archiveReference": "46 Fi 10756"
+        },
+        "streetView": {
+          "latitude": 45.8297006,
+          "longitude": 1.2679901,
+          "heading": 223,
+          "pitch": -7,
+          "fov": 64
+        },
+        "mapboxCamera": {
+          "bearing": 223,
+          "pitch": 55,
+          "zoom": 18,
+          "duration": 3000
+        },
+        "tags": ["cathédrale", "gothique", "monument-historique", "vieux-quartier"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [1.2551924, 45.8301795]
+      },
+      "properties": {
+        "id": "place-aine-19e",
+        "title": "Place d'Aine - Statue de Gay-Lussac",
+        "address": "Place d'Aine, 87000 Limoges",
+        "category": "urbanisme",
+        "description": "La place d'Aine avec la statue du chimiste Joseph Louis Gay-Lussac et le tribunal en arrière-plan. Photographie du 19e siècle montrant l'aménagement urbain de cette place centrale.",
+        "historical": {
+          "year": 1890,
+          "imageUrl": "/archives/place-d-aine-19e.png",
+          "source": "Archives Départementales de la Haute-Vienne",
+          "archiveReference": "Photographie noir et blanc, 11 x 17 cm"
+        },
+        "streetView": {
+          "latitude": 45.8301795,
+          "longitude": 1.2551924,
+          "heading": 294,
+          "pitch": 5,
+          "fov": 38
+        },
+        "mapboxCamera": {
+          "bearing": 294,
+          "pitch": 60,
+          "zoom": 17.5,
+          "duration": 3000
+        },
+        "tags": ["place-publique", "gay-lussac", "statue", "tribunal", "19e-siècle"]
       }
     }
   ]

@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Carte Patrimoniale de Limoges",
   description: "Découvrez l'évolution de Limoges à travers une comparaison interactive entre archives historiques et vues actuelles.",
   keywords: ["Limoges", "patrimoine", "histoire", "archives", "carte interactive"],
+  other: {
+    'Permissions-Policy': 'accelerometer=(), gyroscope=()',
+  },
 };
 
 export default function RootLayout({

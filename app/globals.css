@@ -8,19 +8,62 @@
   }
 }
 
-/* MapBox Overrides */
-.mapboxgl-popup-content {
-  padding: 0;
-  border-radius: 0.5rem;
+/* Animation d'apparition popup */
+@keyframes popupFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
 }
 
+/* Popup Content */
+.mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 0.25rem;
+  box-shadow: 
+    0 4px 12px rgba(110, 64, 39, 0.25),
+    0 2px 6px rgba(110, 64, 39, 0.15),
+    0 0 0 2px rgba(184, 134, 11, 0.4);
+  background-color: #f5f1e8;
+  border: 2px solid rgba(184, 134, 11, 0.4);
+  animation: popupFadeIn 0.3s ease-out;
+}
+
+/* Masquer la flèche Mapbox par défaut */
+.mapboxgl-popup-tip {
+  display: none !important;
+}
+
+/* Créer notre propre flèche - Bordure dorée (extérieure) */
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-content::before {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid rgba(184, 134, 11, 1);
+  z-index: 1;
+}
+
+/* Bouton Fermer */
 .mapboxgl-popup-close-button {
   padding: 0.5rem;
   font-size: 1.25rem;
   color: #6e4027;
+  font-family: Georgia, serif;
+  transition: all 0.2s;
 }
 
 .mapboxgl-popup-close-button:hover {
-  background-color: transparent;
-  color: #a76032;
+  background-color: rgba(184, 134, 11, 0.1);
+  color: #b8860b;
+  transform: scale(1.1);
 }
