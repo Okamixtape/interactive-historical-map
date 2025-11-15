@@ -7,7 +7,7 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
-  reactStrictMode: true, // Activé - révèle les bugs, ne les cause pas (désactivé auto en prod)
+  reactStrictMode: false, // Désactivé - react-map-gl incompatible avec double render StrictMode (voir RESEARCH_SYNTHESIS.md)
   
   // Security headers (CSP, XSS protection, etc.)
   async headers() {
