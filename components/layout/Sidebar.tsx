@@ -106,8 +106,10 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
               Points d'intérêt ({filteredPoints.length})
             </h2>
             <ul role="list" aria-labelledby="poi-list-heading" className="space-y-3">
-              {filteredPoints.map(point => {
+              {filteredPoints.map((point, index) => {
                 const category = CATEGORIES_ARRAY.find(c => c.id === point.properties.category);
+                // Précharger les 2 premières images (visibles au chargement)
+                const isPriority = index < 2;
                 
                 return (
                   <li key={point.properties.id}>
@@ -125,7 +127,8 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 1023px) 320px, 384px"
                         quality={60}
-                        loading="lazy"
+                        loading={isPriority ? undefined : "lazy"}
+                        priority={isPriority}
                         unoptimized={false}
                       />
                       {/* Badge catégorie */}
