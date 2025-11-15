@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, memo, useRef, useEffect } from 'react';
-import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl/mapbox';
+import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji } from '@/lib/constants';
@@ -105,6 +105,17 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     setPopupInfo(null);
   }, [onPointSelect]);
 
+  // Fonctions de zoom custom
+  const handleZoomIn = useCallback(() => {
+    if (!mapRef.current) return;
+    mapRef.current.getMap().zoomIn();
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    if (!mapRef.current) return;
+    mapRef.current.getMap().zoomOut();
+  }, []);
+
   return (
     <div className="relative w-full h-screen">
       <Map
@@ -114,8 +125,6 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         mapStyle={MAP_STYLE}
         mapboxAccessToken={MAPBOX_TOKEN}
       >
-        <NavigationControl position="top-right" showCompass={false} />
-
         {points.map((point) => {
           const [lng, lat] = point.geometry.coordinates;
           if (lng === undefined || lat === undefined) return null;
@@ -208,20 +217,50 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         })()}
       </Map>
 
-      {/* Bouton Toggle 3D */}
-      <button
-        onClick={toggle3DView}
-        className="absolute top-4 right-4 bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors z-20 flex items-center gap-2"
-        aria-label={is3DView ? "Passer en vue 2D" : "Passer en vue 3D"}
-        title={is3DView ? "Vue 2D (Appuyez sur 3)" : "Vue 3D (Appuyez sur 3)"}
-      >
-        <span className="font-serif font-bold text-sm text-heritage-bordeaux">
-          {is3DView ? "2D" : "3D"}
-        </span>
-        <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      </button>
+      {/* Contrôles en haut à droite */}
+      <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+        {/* Bouton Toggle 3D */}
+        <button
+          onClick={toggle3DView}
+          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center gap-2"
+          aria-label={is3DView ? "Passer en vue 2D" : "Passer en vue 3D"}
+          title={is3DView ? "Vue 2D (Appuyez sur 3)" : "Vue 3D (Appuyez sur 3)"}
+        >
+          <span className="font-serif font-bold text-sm text-heritage-bordeaux">
+            {is3DView ? "2D" : "3D"}
+          </span>
+          <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </button>
+
+        {/* Contrôles de zoom */}
+        <div className="bg-white border-2 border-heritage-gold/40 rounded shadow-lg overflow-hidden">
+          {/* Zoom In */}
+          <button
+            onClick={handleZoomIn}
+            className="w-full px-3 py-2 hover:bg-heritage-cream transition-colors border-b border-heritage-gold/20 flex items-center justify-center"
+            aria-label="Zoom avant"
+            title="Zoom avant"
+          >
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+
+          {/* Zoom Out */}
+          <button
+            onClick={handleZoomOut}
+            className="w-full px-3 py-2 hover:bg-heritage-cream transition-colors flex items-center justify-center"
+            aria-label="Zoom arrière"
+            title="Zoom arrière"
+          >
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       {/* Légende */}
       <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 bg-heritage-cream/95 backdrop-blur-sm p-3 md:p-4 rounded border-2 border-heritage-gold/40 shadow-vintage-lg max-h-[40vh] overflow-y-auto z-10">
