@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useState } from 'react';
 import type { PointFeature } from '@/lib/types';
+import { getCategoryEmoji, getCategoryLabel } from '@/lib/constants';
 import { StreetViewEmbed } from './StreetViewEmbed';
 import Image from 'next/image';
 
@@ -46,27 +47,6 @@ export default function PointModal({ point, onClose }: Props) {
   }, [handleClose]);
 
   const { properties } = point;
-
-  // Obtenir l'émoji de la catégorie
-  const getCategoryEmoji = (category: string) => {
-    switch (category) {
-      case 'urbanisme': return '🏛️';
-      case 'architecture': return '🏗️';
-      case 'industrie': return '🏭';
-      case 'patrimoine-disparu': return '🕰️';
-      default: return '📍';
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'urbanisme': return 'Urbanisme';
-      case 'architecture': return 'Architecture';
-      case 'industrie': return 'Industrie';
-      case 'patrimoine-disparu': return 'Patrimoine disparu';
-      default: return category;
-    }
-  };
 
   return (
     <div

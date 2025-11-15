@@ -4,7 +4,7 @@ import { useState, useCallback, memo, useRef } from 'react';
 import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
-import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE } from '@/lib/constants';
+import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji } from '@/lib/constants';
 
 interface Props {
   points: PointFeature[];
@@ -51,22 +51,6 @@ function InteractiveMap({ points, onPointSelect }: Props) {
     setPopupInfo(null);
   }, [onPointSelect]);
 
-  // Fonction pour obtenir l'icône selon la catégorie
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'urbanisme':
-        return '🏛️';
-      case 'architecture':
-        return '🏗️';
-      case 'industrie':
-        return '🏭';
-      case 'patrimoine-disparu':
-        return '🕰️';
-      default:
-        return '📍';
-    }
-  };
-
   return (
     <div className="relative w-full h-screen">
       <Map
@@ -94,7 +78,7 @@ function InteractiveMap({ points, onPointSelect }: Props) {
                 className="cursor-pointer transform transition-all hover:scale-110 text-2xl bg-white rounded-full p-2 shadow-lg border-2 border-heritage-bordeaux hover:shadow-xl"
                 aria-label={point.properties.title}
               >
-                {getCategoryIcon(point.properties.category)}
+                {getCategoryEmoji(point.properties.category)}
               </button>
             </Marker>
           );
@@ -119,10 +103,7 @@ function InteractiveMap({ points, onPointSelect }: Props) {
               {/* Titre avec émoji */}
               <div className="flex items-start gap-2 mb-3">
                 <span className="text-2xl flex-shrink-0" aria-hidden="true">
-                  {popupInfo.properties.category === 'urbanisme' ? '🏛️' : 
-                   popupInfo.properties.category === 'architecture' ? '🏗️' : 
-                   popupInfo.properties.category === 'industrie' ? '🏭' : 
-                   popupInfo.properties.category === 'patrimoine-disparu' ? '🕰️' : '📍'}
+                  {getCategoryEmoji(popupInfo.properties.category)}
                 </span>
                 <div className="flex-1">
                   <h3 className="font-serif font-bold text-base leading-tight text-heritage-bordeaux mb-1">

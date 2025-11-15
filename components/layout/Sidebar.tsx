@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import type { PointFeature } from '@/lib/types';
+import { CATEGORIES, type CategoryId } from '@/lib/constants';
 
-type CategoryFilter = 'all' | 'urbanisme' | 'architecture' | 'industrie' | 'patrimoine-disparu';
+type CategoryFilter = CategoryId;
 
 interface SidebarProps {
   points: PointFeature[];
@@ -13,13 +14,11 @@ interface SidebarProps {
   onFilterChange: (filter: CategoryFilter) => void;
 }
 
-const CATEGORIES = [
-  { id: 'all' as const, label: 'Tous', emoji: '📍' },
-  { id: 'urbanisme' as const, label: 'Urbanisme', emoji: '🏛️' },
-  { id: 'architecture' as const, label: 'Architecture', emoji: '🏗️' },
-  { id: 'industrie' as const, label: 'Industrie', emoji: '🏭' },
-  { id: 'patrimoine-disparu' as const, label: 'Patrimoine disparu', emoji: '🕰️' },
-] as const;
+// Convertir CATEGORIES object en array pour le mapping
+const CATEGORIES_ARRAY = Object.entries(CATEGORIES).map(([id, data]) => ({
+  id: id as CategoryId,
+  ...data
+}));
 
 export default function Sidebar({ points, onPOISelect, activeFilter, onFilterChange }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -66,7 +65,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
             Catégories
           </h2>
           <div role="group" aria-label="Boutons de filtrage" className="flex flex-wrap gap-2">
-            {CATEGORIES.map(category => {
+            {CATEGORIES_ARRAY.map(category => {
               const count = categoryCounts[category.id] || 0;
               const isActive = activeFilter === category.id;
               const isEmpty = count === 0 && category.id !== 'all';
@@ -108,7 +107,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
             </h2>
             <ul role="list" aria-labelledby="poi-list-heading" className="space-y-3">
               {filteredPoints.map(point => {
-                const category = CATEGORIES.find(c => c.id === point.properties.category);
+                const category = CATEGORIES_ARRAY.find(c => c.id === point.properties.category);
                 
                 return (
                   <li key={point.properties.id}>
@@ -124,7 +123,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                         alt={point.properties.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, 384px"
+                        sizes="(max-width: 1023px) 320px, 384px"
                         quality={60}
                         loading="lazy"
                         unoptimized={false}
