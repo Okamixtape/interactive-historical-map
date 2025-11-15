@@ -108,8 +108,8 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
             <ul role="list" aria-labelledby="poi-list-heading" className="space-y-3">
               {filteredPoints.map((point, index) => {
                 const category = CATEGORIES_ARRAY.find(c => c.id === point.properties.category);
-                // Précharger les 2 premières images (visibles au chargement)
-                const isPriority = index < 2;
+                // Précharger seulement la première image pour éviter surcharge mémoire
+                const isPriority = index === 0;
                 
                 return (
                   <li key={point.properties.id}>
@@ -124,15 +124,15 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                         src={point.properties.historical.imageUrl}
                         alt={point.properties.title}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover"
                         sizes="(max-width: 1023px) 320px, 384px"
-                        quality={60}
+                        quality={50}
                         loading={isPriority ? undefined : "lazy"}
                         priority={isPriority}
                         unoptimized={false}
                       />
                       {/* Badge catégorie */}
-                      <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm">
+                      <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm">
                         <span>{category?.emoji}</span>
                       </div>
                     </div>
