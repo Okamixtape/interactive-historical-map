@@ -13,9 +13,10 @@ interface Props {
   hoveredPointId?: string | null;
   onTransitionStateChange?: (isTransitioning: boolean) => void;
   selectedPoint?: PointFeature | null;
+  onHoverPoint?: (poiId: string | null) => void;
 }
 
-function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint }: Props) {
+function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint, onHoverPoint }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const [is3DView, setIs3DView] = useState(false);
   const mapRef = useRef<MapRef>(null);
@@ -143,10 +144,12 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             >
               <button
                 onClick={(e) => handleMarkerClick(e, point)}
+                onMouseEnter={() => onHoverPoint?.(point.properties.id)}
+                onMouseLeave={() => onHoverPoint?.(null)}
                 className={`cursor-pointer transform transition-all bg-white rounded-full shadow-lg border-2 ${
                   isHovered
                     ? 'scale-150 text-3xl p-3 border-heritage-bordeaux shadow-2xl ring-4 ring-heritage-bordeaux/50'
-                    : 'hover:scale-110 text-2xl p-2 border-heritage-bordeaux hover:shadow-xl'
+                    : 'text-2xl p-2 border-heritage-bordeaux'
                 }`}
                 aria-label={point.properties.title}
               >
@@ -220,15 +223,20 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
       </Map>
 
       {/* Flèche directionnelle - montre l'angle de vue de la photo */}
-      {selectedPoint && (
-        <DirectionalArrow
-          mapRef={mapRef}
-          longitude={selectedPoint.geometry.coordinates[0]}
-          latitude={selectedPoint.geometry.coordinates[1]}
-          bearing={selectedPoint.properties.mapboxCamera?.bearing || 0}
-          visible={true}
-        />
-      )}
+      {hoveredPointId && (() => {
+        const hoveredPoint = points.find(p => p.properties.id === hoveredPointId);
+        if (!hoveredPoint) return null;
+
+        return (
+          <DirectionalArrow
+            mapRef={mapRef}
+            longitude={hoveredPoint.geometry.coordinates[0]}
+            latitude={hoveredPoint.geometry.coordinates[1]}
+            bearing={hoveredPoint.properties.mapboxCamera?.bearing || 0}
+            visible={true}
+          />
+        );
+      })()}
 
       {/* Contrôles en haut à droite */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
