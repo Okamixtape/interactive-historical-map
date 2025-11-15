@@ -10,10 +10,12 @@ interface Props {
   points: PointFeature[];
   onPointSelect: (point: PointFeature) => void;
   hoveredPointId?: string | null;
+  onTransitionStateChange?: (isTransitioning: boolean) => void;
 }
 
-function InteractiveMap({ points, onPointSelect, hoveredPointId }: Props) {
+function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
+  const [is3DView, setIs3DView] = useState(false);
   const mapRef = useRef<MapRef>(null);
 
   // Cleanup explicite pour compatibilité React StrictMode
@@ -32,6 +34,40 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId }: Props) {
       }
     };
   }, []);
+
+  // Toggle vue 3D avec transition smooth
+  const toggle3DView = useCallback(() => {
+    if (!mapRef.current) return;
+
+    const map = mapRef.current.getMap();
+    const targetPitch = is3DView ? 0 : 60; // 0 = 2D, 60 = 3D
+
+    // Notifier que la transition commence (désactive animations sidebar)
+    onTransitionStateChange?.(true);
+
+    map.easeTo({
+      pitch: targetPitch,
+      duration: 1000, // 1 seconde
+      easing: (t) => t * (2 - t) // easeOutQuad
+    });
+
+    // Attendre la fin de la transition
+    setTimeout(() => {
+      setIs3DView(!is3DView);
+      onTransitionStateChange?.(false); // Réactive animations sidebar
+    }, 1000);
+  }, [is3DView, onTransitionStateChange]);
+
+  // Raccourci clavier "3" pour toggle 3D
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === '3' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        toggle3DView();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [toggle3DView]);
 
   const handleMarkerClick = useCallback((event: React.MouseEvent, point: PointFeature) => {
     event.stopPropagation();
@@ -171,6 +207,21 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId }: Props) {
           );
         })()}
       </Map>
+
+      {/* Bouton Toggle 3D */}
+      <button
+        onClick={toggle3DView}
+        className="absolute top-4 right-4 bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors z-20 flex items-center gap-2"
+        aria-label={is3DView ? "Passer en vue 2D" : "Passer en vue 3D"}
+        title={is3DView ? "Vue 2D (Appuyez sur 3)" : "Vue 3D (Appuyez sur 3)"}
+      >
+        <span className="font-serif font-bold text-sm text-heritage-bordeaux">
+          {is3DView ? "2D" : "3D"}
+        </span>
+        <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </button>
 
       {/* Légende */}
       <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 bg-heritage-cream/95 backdrop-blur-sm p-3 md:p-4 rounded border-2 border-heritage-gold/40 shadow-vintage-lg max-h-[40vh] overflow-y-auto z-10">

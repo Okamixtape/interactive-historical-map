@@ -18,6 +18,7 @@ export default function HomePage() {
   const [selectedPoint, setSelectedPoint] = useState<PointFeature | null>(null);
   const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>('all');
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const points = (pointsData as PointCollection).features;
 
   // Filtrer les points selon la catégorie active
@@ -36,13 +37,14 @@ export default function HomePage() {
   return (
     <main className="relative">
       {/* Sidebar avec header intégré - passe tous les points pour les counts */}
-      <Sidebar 
-        points={points} 
+      <Sidebar
+        points={points}
         onPOISelect={handlePOISelect}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
         selectedPointId={selectedPoint?.properties.id}
         onHoverPoint={setHoveredPointId}
+        isTransitioning={isTransitioning}
       />
 
       {/* Map */}
@@ -51,10 +53,11 @@ export default function HomePage() {
         aria-label="Carte interactive de Limoges"
         className="w-full h-screen"
       >
-        <InteractiveMap 
-          points={filteredPoints} 
+        <InteractiveMap
+          points={filteredPoints}
           onPointSelect={setSelectedPoint}
           hoveredPointId={hoveredPointId}
+          onTransitionStateChange={setIsTransitioning}
         />
       </div>
 
