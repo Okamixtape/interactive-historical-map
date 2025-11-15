@@ -5,15 +5,17 @@ import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji } from '@/lib/constants';
+import DirectionalArrow from './DirectionalArrow';
 
 interface Props {
   points: PointFeature[];
   onPointSelect: (point: PointFeature) => void;
   hoveredPointId?: string | null;
   onTransitionStateChange?: (isTransitioning: boolean) => void;
+  selectedPoint?: PointFeature | null;
 }
 
-function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange }: Props) {
+function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const [is3DView, setIs3DView] = useState(false);
   const mapRef = useRef<MapRef>(null);
@@ -216,6 +218,17 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           );
         })()}
       </Map>
+
+      {/* Flèche directionnelle - montre l'angle de vue de la photo */}
+      {selectedPoint && (
+        <DirectionalArrow
+          mapRef={mapRef}
+          longitude={selectedPoint.geometry.coordinates[0]}
+          latitude={selectedPoint.geometry.coordinates[1]}
+          bearing={selectedPoint.properties.mapboxCamera?.bearing || 0}
+          visible={true}
+        />
+      )}
 
       {/* Contrôles en haut à droite */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">

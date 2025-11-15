@@ -58,6 +58,7 @@ export default function HomePage() {
           onPointSelect={setSelectedPoint}
           hoveredPointId={hoveredPointId}
           onTransitionStateChange={setIsTransitioning}
+          selectedPoint={selectedPoint}
         />
       </div>
 
