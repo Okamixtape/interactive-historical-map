@@ -19,6 +19,7 @@ interface Props {
 function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint, onHoverPoint }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const [is3DView, setIs3DView] = useState(false);
+  const [bearing, setBearing] = useState(0);
   const mapRef = useRef<MapRef>(null);
 
   // Cleanup explicite pour compatibilité React StrictMode
@@ -72,6 +73,20 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [toggle3DView]);
 
+  // Tracker les changements de bearing pour mise à jour UI
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const map = mapRef.current.getMap();
+
+    const updateBearing = () => {
+      setBearing(map.getBearing());
+    };
+
+    map.on('rotate', updateBearing);
+    return () => map.off('rotate', updateBearing);
+  }, []);
+
   const handleMarkerClick = useCallback((event: React.MouseEvent, point: PointFeature) => {
     event.stopPropagation();
     setPopupInfo(point);
@@ -117,6 +132,38 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const handleZoomOut = useCallback(() => {
     if (!mapRef.current) return;
     mapRef.current.getMap().zoomOut();
+  }, []);
+
+  // Fonctions de rotation bearing
+  const rotateLeft = useCallback(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current.getMap();
+    const newBearing = map.getBearing() - 15; // Rotation -15° par clic
+    map.easeTo({
+      bearing: newBearing,
+      duration: 300
+    });
+  }, []);
+
+  const rotateRight = useCallback(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current.getMap();
+    const newBearing = map.getBearing() + 15; // Rotation +15° par clic
+    map.easeTo({
+      bearing: newBearing,
+      duration: 300
+    });
+  }, []);
+
+  const resetNorth = useCallback(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current.getMap();
+    map.easeTo({
+      bearing: 0,
+      pitch: 0, // Reset 3D aussi
+      duration: 500
+    });
+    setIs3DView(false); // Reset état 3D
   }, []);
 
   return (
@@ -281,6 +328,58 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             </svg>
           </button>
         </div>
+
+        {/* Contrôles de rotation bearing */}
+        <div className="bg-white border-2 border-heritage-gold/40 rounded shadow-lg overflow-hidden flex">
+          {/* Rotation gauche (↶) */}
+          <button
+            onClick={rotateLeft}
+            className="px-3 py-2 hover:bg-heritage-cream transition-colors border-r border-heritage-gold/20 flex items-center justify-center"
+            aria-label="Rotation gauche"
+            title="Rotation gauche (15°)"
+          >
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 3v5h-5" />
+            </svg>
+          </button>
+
+          {/* Rotation droite (↷) */}
+          <button
+            onClick={rotateRight}
+            className="px-3 py-2 hover:bg-heritage-cream transition-colors flex items-center justify-center"
+            aria-label="Rotation droite"
+            title="Rotation droite (15°)"
+          >
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 1 1-6.74-8.74L11 6" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v5h5" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Reset Nord (boussole) */}
+        <button
+          onClick={resetNorth}
+          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center"
+          aria-label="Réinitialiser orientation"
+          title="Retour au Nord (0°)"
+        >
+          <svg
+            className="w-5 h-5 text-heritage-bordeaux transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ transform: `rotate(${-bearing}deg)` }}
+          >
+            {/* Cercle boussole */}
+            <circle cx="12" cy="12" r="9" strokeWidth={2} />
+            {/* Croix cardinale */}
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" strokeWidth={2} strokeLinecap="round" />
+            {/* Aiguille Nord (rouge) */}
+            <path d="M12 7l2 5-2 1-2-1z" fill="currentColor" />
+          </svg>
+        </button>
       </div>
 
       {/* Légende */}
