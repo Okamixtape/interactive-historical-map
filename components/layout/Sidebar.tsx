@@ -116,7 +116,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                     <button
                       onClick={() => onPOISelect(point.properties.id)}
                       aria-label={`Voir ${point.properties.title}, ${point.properties.historical.year}`}
-                      className="w-full text-left bg-white border-2 border-heritage-gold/20 rounded overflow-hidden hover:shadow-vintage-lg hover:border-heritage-gold/50 transition-all duration-200 group"
+                      className="w-full text-left bg-white border-2 border-heritage-gold/20 rounded overflow-hidden cursor-pointer"
                     >
                     {/* Thumbnail */}
                     <div className="relative w-full aspect-[4/3] bg-sepia-100 overflow-hidden">
@@ -139,7 +139,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
 
                     {/* Infos */}
                     <div className="p-3">
-                      <h3 className="font-serif font-semibold text-sm text-heritage-ink line-clamp-2 group-hover:text-heritage-bordeaux transition-colors">
+                      <h3 className="font-serif font-semibold text-sm text-heritage-ink line-clamp-2">
                         {point.properties.title}
                       </h3>
                       <div className="flex items-center gap-2 mt-1.5 text-xs text-heritage-ink/70">
