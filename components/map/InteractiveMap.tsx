@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, memo, useRef } from 'react';
+import { useState, useCallback, memo, useRef, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
@@ -14,6 +14,23 @@ interface Props {
 function InteractiveMap({ points, onPointSelect }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const mapRef = useRef<MapRef>(null);
+
+  // Cleanup explicite pour compatibilité React StrictMode
+  // Résout le problème de double render qui cause accumulation ressources GPU
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        try {
+          const map = mapRef.current.getMap();
+          if (map && typeof map.remove === 'function') {
+            map.remove();
+          }
+        } catch (error) {
+          console.error('Error cleaning up Mapbox:', error);
+        }
+      }
+    };
+  }, []);
 
   const handleMarkerClick = useCallback((event: React.MouseEvent, point: PointFeature) => {
     event.stopPropagation();
