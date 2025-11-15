@@ -40,6 +40,7 @@ export default function HomePage() {
         onPOISelect={handlePOISelect}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
+        selectedPointId={selectedPoint?.properties.id}
       />
 
       {/* Map */}

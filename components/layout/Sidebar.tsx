@@ -12,6 +12,7 @@ interface SidebarProps {
   onPOISelect: (poiId: string) => void;
   activeFilter: CategoryFilter;
   onFilterChange: (filter: CategoryFilter) => void;
+  selectedPointId?: string;
 }
 
 // Convertir CATEGORIES object en array pour le mapping
@@ -20,7 +21,7 @@ const CATEGORIES_ARRAY = Object.entries(CATEGORIES).map(([id, data]) => ({
   ...data
 }));
 
-export default function Sidebar({ points, onPOISelect, activeFilter, onFilterChange }: SidebarProps) {
+export default function Sidebar({ points, onPOISelect, activeFilter, onFilterChange, selectedPointId }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   // Filtrer les points selon la catégorie active
@@ -110,13 +111,20 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                 const category = CATEGORIES_ARRAY.find(c => c.id === point.properties.category);
                 // Précharger seulement la première image pour éviter surcharge mémoire
                 const isPriority = index === 0;
+                // Vérifier si ce POI est sélectionné (ouvert dans la modal)
+                const isSelected = selectedPointId === point.properties.id;
                 
                 return (
                   <li key={point.properties.id}>
                     <button
                       onClick={() => onPOISelect(point.properties.id)}
                       aria-label={`Voir ${point.properties.title}, ${point.properties.historical.year}`}
-                      className="w-full text-left bg-white border-2 border-heritage-gold/20 rounded overflow-hidden cursor-pointer"
+                      aria-pressed={isSelected}
+                      className={`w-full text-left bg-white rounded overflow-hidden cursor-pointer ${
+                        isSelected 
+                          ? 'border-2 border-heritage-bordeaux ring-2 ring-heritage-bordeaux/30' 
+                          : 'border-2 border-heritage-gold/20'
+                      }`}
                     >
                     {/* Thumbnail */}
                     <div className="relative w-full aspect-[4/3] bg-sepia-100 overflow-hidden">
