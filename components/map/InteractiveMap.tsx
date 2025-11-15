@@ -22,16 +22,23 @@ function InteractiveMap({ points, onPointSelect }: Props) {
     // Centrage avec espace pour la popup
     const [lng, lat] = point.geometry.coordinates;
     if (mapRef.current && lng !== undefined && lat !== undefined) {
-      // Calculer l'offset dynamique en fonction de la hauteur de l'écran
-      const viewportHeight = window.innerHeight;
-      const offsetY = Math.min(viewportHeight * 0.25, 200); // 25% de la hauteur ou 200px max
-      
-      mapRef.current.easeTo({
-        center: [lng, lat],
-        duration: 800,
-        easing: (t) => t * (2 - t), // easeOutQuad
-        offset: [0, offsetY] // POSITIF = décale la vue vers le BAS = marqueur monte à l'écran
-      });
+      try {
+        // Calculer l'offset dynamique en fonction de la hauteur de l'écran
+        const viewportHeight = window.innerHeight;
+        const offsetY = Math.min(viewportHeight * 0.25, 200); // 25% de la hauteur ou 200px max
+        
+        // Vérifier que easeTo existe avant de l'appeler
+        if (typeof mapRef.current.easeTo === 'function') {
+          mapRef.current.easeTo({
+            center: [lng, lat],
+            duration: 800,
+            easing: (t) => t * (2 - t), // easeOutQuad
+            offset: [0, offsetY] // POSITIF = décale la vue vers le BAS = marqueur monte à l'écran
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors du centrage de la carte:', error);
+      }
     }
   }, []);
 

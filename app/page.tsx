@@ -34,7 +34,7 @@ export default function HomePage() {
 
   return (
     <main className="relative">
-      {/* Sidebar avec header intégré */}
+      {/* Sidebar avec header intégré - passe tous les points pour les counts */}
       <Sidebar 
         points={points} 
         onPOISelect={handlePOISelect}

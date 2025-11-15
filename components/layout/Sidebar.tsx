@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import type { PointFeature } from '@/lib/types';
 
 type CategoryFilter = 'all' | 'urbanisme' | 'architecture' | 'industrie' | 'patrimoine-disparu';
@@ -118,11 +119,15 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                     >
                     {/* Thumbnail */}
                     <div className="relative w-full aspect-[4/3] bg-sepia-100 overflow-hidden">
-                      <img
+                      <Image
                         src={point.properties.historical.imageUrl}
                         alt={point.properties.title}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, 384px"
+                        quality={60}
                         loading="lazy"
+                        unoptimized={false}
                       />
                       {/* Badge catégorie */}
                       <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm">

@@ -162,6 +162,8 @@ export default function PointModal({ point, onClose }: Props) {
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={75}
+                  priority
                 />
               </div>
               <div className="bg-white rounded border border-heritage-gold/20 p-3 text-xs font-serif text-heritage-ink/80 space-y-1.5">
