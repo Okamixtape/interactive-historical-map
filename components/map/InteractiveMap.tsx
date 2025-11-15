@@ -9,9 +9,10 @@ import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji } from '@
 interface Props {
   points: PointFeature[];
   onPointSelect: (point: PointFeature) => void;
+  hoveredPointId?: string | null;
 }
 
-function InteractiveMap({ points, onPointSelect }: Props) {
+function InteractiveMap({ points, onPointSelect, hoveredPointId }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const mapRef = useRef<MapRef>(null);
 
@@ -82,6 +83,9 @@ function InteractiveMap({ points, onPointSelect }: Props) {
         {points.map((point) => {
           const [lng, lat] = point.geometry.coordinates;
           if (lng === undefined || lat === undefined) return null;
+          
+          // Vérifier si ce marqueur est survolé depuis la sidebar
+          const isHovered = hoveredPointId === point.properties.id;
 
           return (
             <Marker
@@ -92,7 +96,11 @@ function InteractiveMap({ points, onPointSelect }: Props) {
             >
               <button
                 onClick={(e) => handleMarkerClick(e, point)}
-                className="cursor-pointer transform transition-all hover:scale-110 text-2xl bg-white rounded-full p-2 shadow-lg border-2 border-heritage-bordeaux hover:shadow-xl"
+                className={`cursor-pointer transform transition-all bg-white rounded-full shadow-lg border-2 ${
+                  isHovered
+                    ? 'scale-150 text-3xl p-3 border-heritage-bordeaux shadow-2xl ring-4 ring-heritage-bordeaux/50'
+                    : 'hover:scale-110 text-2xl p-2 border-heritage-bordeaux hover:shadow-xl'
+                }`}
                 aria-label={point.properties.title}
               >
                 {getCategoryEmoji(point.properties.category)}

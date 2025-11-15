@@ -13,6 +13,7 @@ interface SidebarProps {
   activeFilter: CategoryFilter;
   onFilterChange: (filter: CategoryFilter) => void;
   selectedPointId?: string;
+  onHoverPoint: (poiId: string | null) => void;
 }
 
 // Convertir CATEGORIES object en array pour le mapping
@@ -21,7 +22,7 @@ const CATEGORIES_ARRAY = Object.entries(CATEGORIES).map(([id, data]) => ({
   ...data
 }));
 
-export default function Sidebar({ points, onPOISelect, activeFilter, onFilterChange, selectedPointId }: SidebarProps) {
+export default function Sidebar({ points, onPOISelect, activeFilter, onFilterChange, selectedPointId, onHoverPoint }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   // Filtrer les points selon la catégorie active
@@ -118,6 +119,8 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                   <li key={point.properties.id}>
                     <button
                       onClick={() => onPOISelect(point.properties.id)}
+                      onMouseEnter={() => onHoverPoint(point.properties.id)}
+                      onMouseLeave={() => onHoverPoint(null)}
                       aria-label={`Voir ${point.properties.title}, ${point.properties.historical.year}`}
                       aria-pressed={isSelected}
                       className={`w-full text-left bg-white rounded overflow-hidden cursor-pointer ${

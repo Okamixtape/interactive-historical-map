@@ -16,6 +16,7 @@ type CategoryFilter = 'all' | 'urbanisme' | 'architecture' | 'industrie' | 'patr
 
 export default function HomePage() {
   const [selectedPoint, setSelectedPoint] = useState<PointFeature | null>(null);
+  const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>('all');
   const points = (pointsData as PointCollection).features;
 
@@ -41,6 +42,7 @@ export default function HomePage() {
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
         selectedPointId={selectedPoint?.properties.id}
+        onHoverPoint={setHoveredPointId}
       />
 
       {/* Map */}
@@ -49,7 +51,11 @@ export default function HomePage() {
         aria-label="Carte interactive de Limoges"
         className="w-full h-screen"
       >
-        <InteractiveMap points={filteredPoints} onPointSelect={setSelectedPoint} />
+        <InteractiveMap 
+          points={filteredPoints} 
+          onPointSelect={setSelectedPoint}
+          hoveredPointId={hoveredPointId}
+        />
       </div>
 
       {/* Modal */}
