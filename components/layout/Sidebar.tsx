@@ -123,7 +123,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                       onMouseLeave={() => onHoverPoint(null)}
                       aria-label={`Voir ${point.properties.title}, ${point.properties.historical.year}`}
                       aria-pressed={isSelected}
-                      className={`w-full text-left bg-white rounded overflow-hidden cursor-pointer ${
+                      className={`w-full text-left bg-white rounded overflow-hidden cursor-pointer transition-all duration-200 group ${
                         isSelected 
                           ? 'border-2 border-heritage-bordeaux ring-2 ring-heritage-bordeaux/30' 
                           : 'border-2 border-heritage-gold/20'
@@ -135,7 +135,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                         src={point.properties.historical.imageUrl}
                         alt={point.properties.title}
                         fill
-                        className="object-cover"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 1023px) 320px, 384px"
                         quality={50}
                         loading={isPriority ? undefined : "lazy"}
@@ -150,7 +150,7 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
 
                     {/* Infos */}
                     <div className="p-3">
-                      <h3 className="font-serif font-semibold text-sm text-heritage-ink line-clamp-2">
+                      <h3 className="font-serif font-semibold text-sm text-heritage-ink line-clamp-2 group-hover:text-heritage-bordeaux transition-colors">
                         {point.properties.title}
                       </h3>
                       <div className="flex items-center gap-2 mt-1.5 text-xs text-heritage-ink/70">
