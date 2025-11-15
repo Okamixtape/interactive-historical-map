@@ -7,7 +7,7 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
-  reactStrictMode: true, // Réactivé - crash mémoire était causé par placeholder="blur", pas StrictMode
+  reactStrictMode: false, // Désactivé - react-map-gl incompatible avec double render StrictMode (voir RESEARCH_SYNTHESIS.md)
   
   // Security headers (CSP, XSS protection, etc.)
   async headers() {
