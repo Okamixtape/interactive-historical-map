@@ -124,15 +124,15 @@ export default function Sidebar({ points, onPOISelect, activeFilter, onFilterCha
                         src={point.properties.historical.imageUrl}
                         alt={point.properties.title}
                         fill
-                        className="object-cover"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 1023px) 320px, 384px"
-                        quality={50}
+                        quality={60}
                         loading={isPriority ? undefined : "lazy"}
                         priority={isPriority}
                         unoptimized={false}
                       />
                       {/* Badge catégorie */}
-                      <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm">
+                      <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm">
                         <span>{category?.emoji}</span>
                       </div>
                     </div>

@@ -7,7 +7,7 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
-  reactStrictMode: false, // Désactivé - cause des double renders et bugs de performance dans la sidebar
+  reactStrictMode: true, // Activé - révèle les bugs, ne les cause pas (désactivé auto en prod)
   
   // Security headers (CSP, XSS protection, etc.)
   async headers() {
