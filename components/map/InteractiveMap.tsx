@@ -22,11 +22,13 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const [is3DView, setIs3DView] = useState(false);
   const [bearing, setBearing] = useState(0);
+  const [show3DBuildings, setShow3DBuildings] = useState(false);
+  const [showTerrain, setShowTerrain] = useState(false);
   const mapRef = useRef<MapRef>(null);
 
   // Filtrer les points à afficher sur la carte
-  const filteredPoints = activeFilter === 'all' 
-    ? points 
+  const filteredPoints = activeFilter === 'all'
+    ? points
     : points.filter(p => p.properties.category === activeFilter);
 
   // Cleanup explicite pour compatibilité React StrictMode
@@ -236,6 +238,131 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     });
   }, []);
 
+  // Toggle bâtiments 3D
+  const toggle3DBuildings = useCallback(() => {
+    setShow3DBuildings(!show3DBuildings);
+  }, [show3DBuildings]);
+
+  // Toggle relief du terrain
+  const toggleTerrain = useCallback(() => {
+    setShowTerrain(!showTerrain);
+  }, [showTerrain]);
+
+  // Gérer l'affichage des bâtiments 3D
+  useEffect(() => {
+    if (!mapRef.current) return undefined;
+
+    const map = mapRef.current.getMap();
+
+    const handleMapLoad = () => {
+      try {
+        if (show3DBuildings) {
+          // Ajouter la layer des bâtiments 3D si elle n'existe pas
+          if (!map.getLayer('building-3d')) {
+            map.addLayer({
+              id: 'building-3d',
+              source: 'composite',
+              'source-layer': 'building',
+              filter: ['==', 'extrude', 'true'],
+              type: 'fill-extrusion',
+              minzoom: 14,
+              paint: {
+                'fill-extrusion-color': '#aaa',
+                'fill-extrusion-height': [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  14,
+                  0,
+                  15.05,
+                  ['get', 'height']
+                ],
+                'fill-extrusion-base': [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  14,
+                  0,
+                  15.05,
+                  ['get', 'min_height']
+                ],
+                'fill-extrusion-opacity': 0.6
+              }
+            });
+          } else {
+            // Si la layer existe déjà, la rendre visible
+            map.setLayoutProperty('building-3d', 'visibility', 'visible');
+          }
+        } else {
+          // Masquer la layer si elle existe
+          if (map.getLayer('building-3d')) {
+            map.setLayoutProperty('building-3d', 'visibility', 'none');
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la gestion des bâtiments 3D:', error);
+      }
+    };
+
+    if (map.loaded()) {
+      handleMapLoad();
+    } else {
+      map.on('load', handleMapLoad);
+    }
+
+    return () => {
+      if (map && map.off) {
+        map.off('load', handleMapLoad);
+      }
+    };
+  }, [show3DBuildings]);
+
+  // Gérer l'affichage du relief du terrain
+  useEffect(() => {
+    if (!mapRef.current) return undefined;
+
+    const map = mapRef.current.getMap();
+
+    const handleMapLoad = () => {
+      try {
+        if (showTerrain) {
+          // Ajouter la source de terrain si elle n'existe pas
+          if (!map.getSource('mapbox-dem')) {
+            map.addSource('mapbox-dem', {
+              type: 'raster-dem',
+              url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+              tileSize: 512,
+              maxzoom: 14
+            });
+          }
+
+          // Activer le terrain 3D
+          map.setTerrain({
+            source: 'mapbox-dem',
+            exaggeration: 1.5 // Exagérer le relief pour mieux voir les dénivelés
+          });
+        } else {
+          // Désactiver le terrain
+          map.setTerrain(null);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la gestion du terrain:', error);
+      }
+    };
+
+    if (map.loaded()) {
+      handleMapLoad();
+    } else {
+      map.on('load', handleMapLoad);
+    }
+
+    return () => {
+      if (map && map.off) {
+        map.off('load', handleMapLoad);
+      }
+    };
+  }, [showTerrain]);
+
   return (
     <div className="relative w-full h-screen">
       <Map
@@ -396,6 +523,41 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           )}
+        </button>
+
+        {/* Toggle Bâtiments 3D */}
+        <button
+          onClick={toggle3DBuildings}
+          className={`bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2 ${
+            show3DBuildings ? 'bg-heritage-cream ring-2 ring-heritage-bordeaux/30' : 'hover:bg-heritage-cream'
+          }`}
+          aria-label={show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
+          title={show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
+        >
+          <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span className="font-serif text-xs font-medium text-heritage-bordeaux">
+            Bâtiments
+          </span>
+        </button>
+
+        {/* Toggle Relief du Terrain */}
+        <button
+          onClick={toggleTerrain}
+          className={`bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2 ${
+            showTerrain ? 'bg-heritage-cream ring-2 ring-heritage-bordeaux/30' : 'hover:bg-heritage-cream'
+          }`}
+          aria-label={showTerrain ? "Masquer le relief du terrain" : "Afficher le relief du terrain"}
+          title={showTerrain ? "Masquer le relief du terrain (dénivelés réels de Limoges)" : "Afficher le relief du terrain (dénivelés réels de Limoges)"}
+        >
+          <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21L12 3l9 18H3z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l4-8 4 8" opacity="0.5" />
+          </svg>
+          <span className="font-serif text-xs font-medium text-heritage-bordeaux">
+            Relief
+          </span>
         </button>
 
         {/* Contrôles de zoom */}
