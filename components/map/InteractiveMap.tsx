@@ -438,22 +438,15 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           </Popup>
           );
         })()}
-      </Map>
 
-      {/* 
-        TODO: Flèche directionnelle - montre l'angle de vue de la photo
-        Désactivée temporairement car pas assez intuitive visuellement.
-        À retravailler avec une meilleure UX (pulse, badge angle, etc.)
-        
-        Code conservé pour référence :
-        
+        {/* Flèche directionnelle indiquant l'angle de prise de vue */}
         {(() => {
-          // ✅ SÉCURITÉ : Afficher la flèche uniquement pour les points visibles
+          // Afficher la flèche uniquement pour les points visibles
           // Priorité : popup ouverte > point survolé (mais seulement si visible dans le filtre)
           let pointToShowArrow = null;
 
           if (popupInfo) {
-            // Si popup ouverte, utiliser ce point (déjà vérifié par l'useEffect ci-dessus)
+            // Si popup ouverte, utiliser ce point
             pointToShowArrow = popupInfo;
           } else if (hoveredPointId) {
             // Sinon, chercher le point survolé UNIQUEMENT dans les points filtrés
@@ -465,31 +458,33 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           const [lng, lat] = pointToShowArrow.geometry.coordinates;
           if (lng === undefined || lat === undefined) return null;
 
+          // Utiliser streetView.heading (direction de la caméra)
+          const heading = pointToShowArrow.properties.streetView?.heading ?? 0;
+
           return (
             <DirectionalArrow
-              mapRef={mapRef}
               longitude={lng}
               latitude={lat}
-              bearing={pointToShowArrow.properties.mapboxCamera?.bearing || 0}
+              bearing={heading}
+              mapBearing={bearing}
               visible={true}
             />
           );
         })()}
-      */}
 
-      {/* Contrôles en haut à droite */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
-        {/* Bouton Info Shortcuts */}
-        <button
-          onClick={() => setShowShortcutsModal(true)}
-          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded-full shadow-lg w-10 h-10 transition-colors flex items-center justify-center self-center"
-          aria-label="Afficher les raccourcis clavier"
-          title="Raccourcis clavier et contrôles"
-        >
-          <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </button>
+        {/* Contrôles en haut à droite */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+          {/* Bouton Info Shortcuts */}
+          <button
+            onClick={() => setShowShortcutsModal(true)}
+            className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded-full shadow-lg w-10 h-10 transition-colors flex items-center justify-center self-center"
+            aria-label="Afficher les raccourcis clavier"
+            title="Raccourcis clavier et contrôles"
+          >
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
 
         {/* Bouton Toggle 3D */}
         <button
@@ -721,6 +716,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           </svg>
         </button>
       </div>
+      </Map>
 
       {/* Modal Shortcuts */}
       {showShortcutsModal && (

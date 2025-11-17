@@ -1,117 +1,65 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
-import type { MapRef } from 'react-map-gl/mapbox';
-import { useThrottle } from '@/hooks/useThrottle';
+import { memo } from 'react';
+import { Marker } from 'react-map-gl/mapbox';
 
 interface DirectionalArrowProps {
-  mapRef: React.RefObject<MapRef>;
   longitude: number;
   latitude: number;
   bearing: number; // Angle de la photo (0-360°)
+  mapBearing: number; // Rotation de la carte (0-360°)
   visible: boolean;
 }
 
-export default function DirectionalArrow({
-  mapRef,
+function DirectionalArrow({
   longitude,
   latitude,
   bearing,
+  mapBearing,
   visible
 }: DirectionalArrowProps) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [mapBearing, setMapBearing] = useState(0);
-  const arrowRef = useRef<HTMLDivElement>(null);
-
-  // Convertir lng/lat en coordonnées écran (x/y pixels)
-  // ✅ OPTIMISATION : Throttle pour limiter à 60 FPS max
-  const updatePositionRaw = useCallback(() => {
-    try {
-      const map = mapRef.current?.getMap();
-      if (!map) return;
-
-      // Projeter les coordonnées géographiques en pixels écran
-      const point = map.project([longitude, latitude]);
-
-      setPosition({
-        x: point.x,
-        y: point.y
-      });
-    } catch (error) {
-      console.error('Error projecting arrow position:', error);
-    }
-  }, [mapRef, longitude, latitude]);
-
-  const updatePosition = useThrottle(updatePositionRaw, 16); // 60 FPS (1000/60 ≈ 16ms)
-
-  useEffect(() => {
-    if (!mapRef.current || !visible) return undefined;
-
-    // Calculer position initiale
-    updatePositionRaw();
-
-    // Recalculer quand la carte bouge (pan/zoom/rotate)
-    const map = mapRef.current.getMap();
-
-    const updateBearing = () => {
-      setMapBearing(map.getBearing());
-    };
-
-    map.on('move', updatePosition);
-    map.on('zoom', updatePosition);
-    map.on('rotate', updateBearing);
-
-    // Init bearing
-    updateBearing();
-
-    return () => {
-      map.off('move', updatePosition);
-      map.off('zoom', updatePosition);
-      map.off('rotate', updateBearing);
-    };
-  }, [mapRef, longitude, latitude, visible, updatePosition, updatePositionRaw]);
-
   if (!visible) return null;
 
+  // Calculer la rotation compensée : bearing de la photo - bearing de la carte
+  const adjustedBearing = bearing - mapBearing;
+
   return (
-    <div
-      ref={arrowRef}
-      className="absolute pointer-events-none z-30"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        // Rotation = bearing de la photo - bearing de la carte
-        transform: `translate(-50%, -50%) rotate(${bearing - mapBearing}deg)`,
-        transition: 'transform 0.3s ease-out',
-      }}
-      aria-hidden="true"
+    <Marker
+      longitude={longitude}
+      latitude={latitude}
+      anchor="bottom"
+      style={{ pointerEvents: 'none', zIndex: 5 }}
     >
-      {/* Flèche SVG rouge pointant vers le haut (0°) */}
-      <svg width="80" height="80" viewBox="0 0 80 80">
-        {/* Ombre pour contraste */}
-        <path
-          d="M40 10 L60 60 L40 50 L20 60 Z"
-          fill="rgba(0, 0, 0, 0.3)"
-          transform="translate(2, 2)"
-        />
-        {/* Flèche principale */}
-        <path
-          d="M40 10 L60 60 L40 50 L20 60 Z"
-          fill="#DC2626"
-          stroke="#7F1D1D"
-          strokeWidth="2"
-          opacity="0.9"
-        />
-        {/* Point central pour meilleure visibilité */}
-        <circle
-          cx="40"
-          cy="40"
-          r="6"
-          fill="white"
-          stroke="#DC2626"
-          strokeWidth="2"
-        />
-      </svg>
-    </div>
+      <div
+        className="transform transition-transform duration-300"
+        style={{
+          transform: `rotate(${adjustedBearing}deg)`,
+        }}
+        aria-hidden="true"
+      >
+        {/* Flèche directionnelle élégante (heritage-bordeaux) */}
+        <svg width="80" height="80" viewBox="0 0 80 80" className="drop-shadow-md">
+          {/* Ligne de la flèche (part du bas du marqueur) */}
+          <line
+            x1="40"
+            y1="60"
+            x2="40"
+            y2="15"
+            stroke="#8B4513"
+            strokeWidth="3"
+            strokeLinecap="round"
+            opacity="0.9"
+          />
+          {/* Pointe de la flèche (triangle) */}
+          <path
+            d="M40 10 L48 22 L32 22 Z"
+            fill="#8B4513"
+            opacity="0.95"
+          />
+        </svg>
+      </div>
+    </Marker>
   );
 }
+
+export default memo(DirectionalArrow);

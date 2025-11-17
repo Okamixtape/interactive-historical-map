@@ -22,9 +22,9 @@
         "streetView": {
           "latitude": 45.8286817,
           "longitude": 1.271351,
-          "heading": 286,
-          "pitch": 0,
-          "fov": 38
+          "heading": 285,
+          "pitch": 3,
+          "fov": 50
         },
         "mapboxCamera": {
           "bearing": 286,
@@ -56,9 +56,9 @@
         "streetView": {
           "latitude": 45.8281906,
           "longitude": 1.2707901,
-          "heading": 325,
-          "pitch": -3,
-          "fov": 24
+          "heading": 322,
+          "pitch": 2,
+          "fov": 46
         },
         "mapboxCamera": {
           "bearing": 325,
@@ -85,14 +85,15 @@
           "year": 1900,
           "imageUrl": "/archives/cathedrale-abside-19e.jpg",
           "source": "Archives Départementales de la Haute-Vienne",
-          "archiveReference": "46 Fi 10756"
+          "archiveReference": "46 Fi 10756",
+          "orientation": "portrait"
         },
         "streetView": {
           "latitude": 45.8297006,
           "longitude": 1.2679901,
-          "heading": 220,
-          "pitch": -7,
-          "fov": 52
+          "heading": 218,
+          "pitch": 20,
+          "fov": 50
         },
         "mapboxCamera": {
           "bearing": 223,
@@ -125,8 +126,8 @@
           "latitude": 45.8301795,
           "longitude": 1.2551924,
           "heading": 294,
-          "pitch": 5,
-          "fov": 50
+          "pitch": 8.5,
+          "fov": 62
         },
         "mapboxCamera": {
           "bearing": 294,
