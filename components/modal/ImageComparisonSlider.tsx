@@ -25,31 +25,29 @@ export function ImageComparisonSlider({ point }: Props) {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* En-têtes avec position dynamique */}
       <div className="flex items-center justify-between px-2">
-        <div className={`flex items-center gap-2 transition-opacity ${sliderPosition > 40 ? 'opacity-100' : 'opacity-50'}`}>
-          <span className="text-xl" aria-hidden="true">📜</span>
-          <h3 className="text-lg font-serif font-bold text-heritage-bordeaux">
-            Vue Historique
+        <div className={`flex items-center gap-1.5 transition-opacity ${sliderPosition > 40 ? 'opacity-100' : 'opacity-50'}`}>
+          <h3 className="text-sm font-serif font-bold text-heritage-bordeaux">
+            Historique
           </h3>
-          <span className="text-sm font-serif font-medium text-heritage-ink bg-heritage-cream px-2 py-1 rounded border border-heritage-gold/30">
+          <span className="text-xs font-serif font-medium text-heritage-ink bg-heritage-cream px-1.5 py-0.5 rounded border border-heritage-gold/30">
             {properties.historical.year}
           </span>
         </div>
-        <div className={`flex items-center gap-2 transition-opacity ${sliderPosition < 60 ? 'opacity-100' : 'opacity-50'}`}>
-          <span className="text-xl" aria-hidden="true">📍</span>
-          <h3 className="text-lg font-serif font-bold text-heritage-bordeaux">
-            Vue Actuelle
+        <div className={`flex items-center gap-1.5 transition-opacity ${sliderPosition < 60 ? 'opacity-100' : 'opacity-50'}`}>
+          <h3 className="text-sm font-serif font-bold text-heritage-bordeaux">
+            Actuelle
           </h3>
-          <span className="text-sm font-serif font-medium text-heritage-ink bg-heritage-cream px-2 py-1 rounded border border-heritage-gold/30">
+          <span className="text-xs font-serif font-medium text-heritage-ink bg-heritage-cream px-1.5 py-0.5 rounded border border-heritage-gold/30">
             2024
           </span>
         </div>
       </div>
 
       {/* Slider de comparaison */}
-      <div className="relative aspect-[4/3] rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg">
+      <div className="relative aspect-[16/9] rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg">
         <ReactCompareSlider
           position={sliderPosition}
           onPositionChange={setSliderPosition}
@@ -142,8 +140,8 @@ export function ImageComparisonSlider({ point }: Props) {
       </div>
 
       {/* Instructions d'utilisation (accessibilité) */}
-      <div className="bg-heritage-cream/50 rounded border border-heritage-gold/20 p-3 text-xs font-serif text-heritage-ink/70 italic">
-        💡 <strong>Astuce :</strong> Glissez le curseur avec la souris, le doigt ou les flèches du clavier (←→) pour comparer les époques
+      <div className="bg-heritage-cream/50 rounded border border-heritage-gold/20 p-2 text-xs font-serif text-heritage-ink/70 italic">
+        💡 Glissez le curseur (souris, doigt ou flèches ←→) pour comparer
       </div>
     </div>
   );
