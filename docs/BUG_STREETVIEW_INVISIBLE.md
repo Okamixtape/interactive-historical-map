@@ -59,7 +59,7 @@ Demandé : 1280×640
 
 ```bash
 $ grep NEXT_PUBLIC_GOOGLE_MAPS_API_KEY .env.local
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyCYJJI6zEutIWNg28EczBDX5vXuMet8hxM
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSy************************
 ```
 
 ✅ Clé présente et valide (format correct)
