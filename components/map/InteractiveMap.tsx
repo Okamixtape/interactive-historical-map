@@ -24,6 +24,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const [bearing, setBearing] = useState(0);
   const [show3DBuildings, setShow3DBuildings] = useState(false);
   const [showTerrain, setShowTerrain] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(INITIAL_VIEW_STATE.zoom);
   const mapRef = useRef<MapRef>(null);
 
   // Filtrer les points à afficher sur la carte
@@ -55,6 +56,13 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     const map = mapRef.current.getMap();
     const targetPitch = is3DView ? 0 : 60; // 0 = 2D, 60 = 3D
 
+    // ✅ SÉCURITÉ : Si retour en 2D, désactiver bâtiments et terrain
+    if (is3DView) {
+      // On passe de 3D → 2D
+      setShow3DBuildings(false);
+      setShowTerrain(false);
+    }
+
     // Notifier que la transition commence (désactive animations sidebar)
     onTransitionStateChange?.(true);
 
@@ -82,7 +90,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [toggle3DView]);
 
-  // Tracker les changements de bearing pour mise à jour UI
+  // Tracker les changements de bearing et zoom pour mise à jour UI
   useEffect(() => {
     if (!mapRef.current) return undefined;
 
@@ -92,12 +100,22 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
       setBearing(map.getBearing());
     };
 
-    // ✅ FIX : Initialiser bearing au montage
+    const updateZoom = () => {
+      setCurrentZoom(map.getZoom());
+    };
+
+    // ✅ FIX : Initialiser bearing et zoom au montage
     updateBearing();
+    updateZoom();
 
     map.on('rotate', updateBearing);
+    map.on('zoom', updateZoom);
+    map.on('move', updateZoom); // Pour capturer les changements pendant les animations
+
     return () => {
       map.off('rotate', updateBearing);
+      map.off('zoom', updateZoom);
+      map.off('move', updateZoom);
     };
   }, []);
 
@@ -238,15 +256,33 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     });
   }, []);
 
-  // Toggle bâtiments 3D
+  // Toggle bâtiments 3D (exclusif avec terrain pour éviter crash GPU)
   const toggle3DBuildings = useCallback(() => {
-    setShow3DBuildings(!show3DBuildings);
-  }, [show3DBuildings]);
+    if (!is3DView) return; // Ne fonctionne qu'en mode 3D
 
-  // Toggle relief du terrain
+    if (!show3DBuildings) {
+      // On active les bâtiments → désactiver le terrain
+      setShow3DBuildings(true);
+      setShowTerrain(false);
+    } else {
+      // On désactive les bâtiments
+      setShow3DBuildings(false);
+    }
+  }, [show3DBuildings, is3DView]);
+
+  // Toggle relief du terrain (exclusif avec bâtiments pour éviter crash GPU)
   const toggleTerrain = useCallback(() => {
-    setShowTerrain(!showTerrain);
-  }, [showTerrain]);
+    if (!is3DView) return; // Ne fonctionne qu'en mode 3D
+
+    if (!showTerrain) {
+      // On active le terrain → désactiver les bâtiments
+      setShowTerrain(true);
+      setShow3DBuildings(false);
+    } else {
+      // On désactive le terrain
+      setShowTerrain(false);
+    }
+  }, [showTerrain, is3DView, show3DBuildings]);
 
   // Gérer l'affichage des bâtiments 3D
   useEffect(() => {
@@ -525,37 +561,47 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           )}
         </button>
 
-        {/* Toggle Bâtiments 3D */}
+        {/* Toggle Bâtiments 3D - Disponible uniquement en mode 3D */}
         <button
           onClick={toggle3DBuildings}
-          className={`bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2 ${
-            show3DBuildings ? 'bg-heritage-cream ring-2 ring-heritage-bordeaux/30' : 'hover:bg-heritage-cream'
+          disabled={!is3DView}
+          className={`border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2 ${
+            !is3DView
+              ? 'bg-gray-100 cursor-not-allowed opacity-50'
+              : show3DBuildings
+                ? 'bg-heritage-cream ring-2 ring-heritage-bordeaux/30'
+                : 'bg-white hover:bg-heritage-cream'
           }`}
-          aria-label={show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
-          title={show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
+          aria-label={!is3DView ? "Bâtiments 3D (disponible en mode 3D uniquement)" : show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
+          title={!is3DView ? "Activez d'abord le mode 3D pour afficher les bâtiments" : show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
         >
-          <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
-          <span className="font-serif text-xs font-medium text-heritage-bordeaux">
+          <span className={`font-serif text-xs font-medium ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`}>
             Bâtiments
           </span>
         </button>
 
-        {/* Toggle Relief du Terrain */}
+        {/* Toggle Relief du Terrain - Disponible uniquement en mode 3D */}
         <button
           onClick={toggleTerrain}
-          className={`bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2 ${
-            showTerrain ? 'bg-heritage-cream ring-2 ring-heritage-bordeaux/30' : 'hover:bg-heritage-cream'
+          disabled={!is3DView}
+          className={`border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2 ${
+            !is3DView
+              ? 'bg-gray-100 cursor-not-allowed opacity-50'
+              : showTerrain
+                ? 'bg-heritage-cream ring-2 ring-heritage-bordeaux/30'
+                : 'bg-white hover:bg-heritage-cream'
           }`}
-          aria-label={showTerrain ? "Masquer le relief du terrain" : "Afficher le relief du terrain"}
-          title={showTerrain ? "Masquer le relief du terrain (dénivelés réels de Limoges)" : "Afficher le relief du terrain (dénivelés réels de Limoges)"}
+          aria-label={!is3DView ? "Relief du terrain (disponible en mode 3D uniquement)" : showTerrain ? "Masquer le relief du terrain" : "Afficher le relief du terrain"}
+          title={!is3DView ? "Activez d'abord le mode 3D pour afficher le relief du terrain" : showTerrain ? "Masquer le relief du terrain (dénivelés réels de Limoges)" : "Afficher le relief du terrain (dénivelés réels de Limoges)"}
         >
-          <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21L12 3l9 18H3z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l4-8 4 8" opacity="0.5" />
           </svg>
-          <span className="font-serif text-xs font-medium text-heritage-bordeaux">
+          <span className={`font-serif text-xs font-medium ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`}>
             Relief
           </span>
         </button>
@@ -614,6 +660,31 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v5h5" />
             </svg>
           </button>
+        </div>
+
+        {/* Indicateur de zoom */}
+        <div className="bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-3">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-heritage-bordeaux flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" strokeWidth={2} />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35" />
+            </svg>
+            <div className="flex-1">
+              <div className="h-1.5 bg-heritage-cream rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-heritage-bordeaux transition-all duration-300"
+                  style={{
+                    width: `${((currentZoom - MAP_ZOOM_LIMITS.minZoom) / (MAP_ZOOM_LIMITS.maxZoom - MAP_ZOOM_LIMITS.minZoom)) * 100}%`
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[9px] font-serif text-heritage-ink/50">{MAP_ZOOM_LIMITS.minZoom}</span>
+                <span className="text-[10px] font-serif font-medium text-heritage-bordeaux">{currentZoom.toFixed(1)}</span>
+                <span className="text-[9px] font-serif text-heritage-ink/50">{MAP_ZOOM_LIMITS.maxZoom}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Reset Nord (boussole) */}
