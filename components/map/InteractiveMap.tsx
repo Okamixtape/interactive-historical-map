@@ -130,6 +130,20 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     }
   }, [pointIdToOpenPopup, points]);
 
+  // ✅ SÉCURITÉ : Fermer la popup automatiquement quand le filtre change
+  // Évite les crashs si la popup affiche un point qui n'est plus dans le filtre actif
+  useEffect(() => {
+    if (!popupInfo) return;
+
+    // Vérifier si le point de la popup est toujours dans les points filtrés
+    const isPointStillVisible = filteredPoints.some(p => p.properties.id === popupInfo.properties.id);
+
+    // Si le point n'est plus visible, fermer la popup
+    if (!isPointStillVisible) {
+      setPopupInfo(null);
+    }
+  }, [activeFilter, popupInfo, filteredPoints]);
+
   const handleMarkerClick = useCallback((event: React.MouseEvent, point: PointFeature) => {
     event.stopPropagation();
     setPopupInfo(point);
@@ -330,8 +344,18 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
 
       {/* Flèche directionnelle - montre l'angle de vue de la photo */}
       {(() => {
-        // Afficher la flèche pour le point survolé OU le point avec popup ouverte
-        const pointToShowArrow = popupInfo || (hoveredPointId ? points.find(p => p.properties.id === hoveredPointId) : null);
+        // ✅ SÉCURITÉ : Afficher la flèche uniquement pour les points visibles
+        // Priorité : popup ouverte > point survolé (mais seulement si visible dans le filtre)
+        let pointToShowArrow = null;
+
+        if (popupInfo) {
+          // Si popup ouverte, utiliser ce point (déjà vérifié par l'useEffect ci-dessus)
+          pointToShowArrow = popupInfo;
+        } else if (hoveredPointId) {
+          // Sinon, chercher le point survolé UNIQUEMENT dans les points filtrés
+          pointToShowArrow = filteredPoints.find(p => p.properties.id === hoveredPointId) || null;
+        }
+
         if (!pointToShowArrow) return null;
 
         const [lng, lat] = pointToShowArrow.geometry.coordinates;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import InteractiveMap from '@/components/map/InteractiveMap';
 import Sidebar from '@/components/layout/Sidebar';
@@ -33,6 +33,20 @@ export default function HomePage() {
     // Reset après un court délai pour permettre de cliquer à nouveau sur la même carte
     setTimeout(() => setPointIdToOpenPopup(null), 100);
   }, []);
+
+  // ✅ SÉCURITÉ : Nettoyer le hover quand le filtre change
+  // Évite d'avoir un hover sur un point qui n'est plus visible
+  useEffect(() => {
+    if (!hoveredPointId) return;
+
+    // Vérifier si le point survolé est toujours dans les points filtrés
+    const isPointStillVisible = filteredPoints.some(p => p.properties.id === hoveredPointId);
+
+    // Si le point n'est plus visible, retirer le hover
+    if (!isPointStillVisible) {
+      setHoveredPointId(null);
+    }
+  }, [activeFilter, hoveredPointId, filteredPoints]);
 
   return (
     <main className="relative">
