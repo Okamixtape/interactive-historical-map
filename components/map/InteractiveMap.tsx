@@ -24,6 +24,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const [bearing, setBearing] = useState(0);
   const [show3DBuildings, setShow3DBuildings] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(INITIAL_VIEW_STATE.zoom);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const mapRef = useRef<MapRef>(null);
 
   // Filtrer les points à afficher sur la carte
@@ -88,33 +89,11 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [toggle3DView]);
 
-  // Tracker les changements de bearing et zoom pour mise à jour UI
-  useEffect(() => {
-    if (!mapRef.current) return undefined;
-
-    const map = mapRef.current.getMap();
-
-    const updateBearing = () => {
-      setBearing(map.getBearing());
-    };
-
-    const updateZoom = () => {
-      setCurrentZoom(map.getZoom());
-    };
-
-    // ✅ FIX : Initialiser bearing et zoom au montage
-    updateBearing();
-    updateZoom();
-
-    map.on('rotate', updateBearing);
-    map.on('zoom', updateZoom);
-    map.on('move', updateZoom); // Pour capturer les changements pendant les animations
-
-    return () => {
-      map.off('rotate', updateBearing);
-      map.off('zoom', updateZoom);
-      map.off('move', updateZoom);
-    };
+  // Synchroniser bearing et zoom avec tous les mouvements de carte
+  // Utilise onMove du composant Map pour cohérence maximale
+  const handleMapMove = useCallback((evt: any) => {
+    setBearing(evt.viewState.bearing);
+    setCurrentZoom(evt.viewState.zoom);
   }, []);
 
   // Ouvrir la popup quand un point est sélectionné depuis la sidebar
@@ -213,7 +192,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const handleZoomChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (!mapRef.current) return;
     const newZoom = parseFloat(event.target.value);
-    setCurrentZoom(newZoom); // Update state immédiatement pour UI responsive
+    // La synchronisation de currentZoom se fait automatiquement via onMove
     mapRef.current.getMap().zoomTo(newZoom, { duration: 200 });
   }, []);
 
@@ -224,9 +203,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     const currentBearing = map.getBearing();
     const newBearing = currentBearing + 15; // Rotation +15° par clic (sens horaire)
 
-    // ✅ FIX : Mettre à jour bearing state immédiatement
-    setBearing(newBearing);
-
+    // La synchronisation de bearing se fait automatiquement via onMove
     map.easeTo({
       bearing: newBearing,
       duration: 300
@@ -239,9 +216,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     const currentBearing = map.getBearing();
     const newBearing = currentBearing - 15; // Rotation -15° par clic (sens anti-horaire)
 
-    // ✅ FIX : Mettre à jour bearing state immédiatement
-    setBearing(newBearing);
-
+    // La synchronisation de bearing se fait automatiquement via onMove
     map.easeTo({
       bearing: newBearing,
       duration: 300
@@ -252,9 +227,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     if (!mapRef.current) return;
     const map = mapRef.current.getMap();
 
-    // ✅ FIX : Mettre à jour bearing state immédiatement
-    setBearing(0);
-
+    // La synchronisation de bearing se fait automatiquement via onMove
     map.easeTo({
       bearing: 0,
       // Garde le pitch actuel (ne reset pas la vue 3D)
@@ -364,6 +337,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         maxBounds={LIMOGES_BOUNDS}
         minZoom={MAP_ZOOM_LIMITS.minZoom}
         maxZoom={MAP_ZOOM_LIMITS.maxZoom}
+        onMove={handleMapMove}
       >
         {filteredPoints.map((point) => {
           const [lng, lat] = point.geometry.coordinates;
@@ -447,11 +421,18 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                 onClick={() => handleViewComparison(popupInfo)}
                 className="w-full bg-heritage-bordeaux text-heritage-cream px-4 py-2.5 rounded border-2 border-heritage-gold/40 hover:bg-heritage-ink hover:shadow-vintage transition-all text-sm font-serif font-medium flex items-center justify-center gap-2"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                {/* Icône comparaison avant/après (slider) */}
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  {/* Rectangle divisé en deux */}
+                  <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2"/>
+                  {/* Ligne de séparation verticale avec slider */}
+                  <line x1="12" y1="5" x2="12" y2="19" strokeWidth="2"/>
+                  {/* Cercle de contrôle slider */}
+                  <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="currentColor" strokeWidth="1.5"/>
+                  {/* Flèches gauche/droite dans le cercle */}
+                  <path d="M10.5 12 L9.5 12 M13.5 12 L14.5 12" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
-                Voir la comparaison
+                Comparer avant/après
               </button>
             </div>
           </Popup>
@@ -459,38 +440,57 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         })()}
       </Map>
 
-      {/* Flèche directionnelle - montre l'angle de vue de la photo */}
-      {(() => {
-        // ✅ SÉCURITÉ : Afficher la flèche uniquement pour les points visibles
-        // Priorité : popup ouverte > point survolé (mais seulement si visible dans le filtre)
-        let pointToShowArrow = null;
+      {/* 
+        TODO: Flèche directionnelle - montre l'angle de vue de la photo
+        Désactivée temporairement car pas assez intuitive visuellement.
+        À retravailler avec une meilleure UX (pulse, badge angle, etc.)
+        
+        Code conservé pour référence :
+        
+        {(() => {
+          // ✅ SÉCURITÉ : Afficher la flèche uniquement pour les points visibles
+          // Priorité : popup ouverte > point survolé (mais seulement si visible dans le filtre)
+          let pointToShowArrow = null;
 
-        if (popupInfo) {
-          // Si popup ouverte, utiliser ce point (déjà vérifié par l'useEffect ci-dessus)
-          pointToShowArrow = popupInfo;
-        } else if (hoveredPointId) {
-          // Sinon, chercher le point survolé UNIQUEMENT dans les points filtrés
-          pointToShowArrow = filteredPoints.find(p => p.properties.id === hoveredPointId) || null;
-        }
+          if (popupInfo) {
+            // Si popup ouverte, utiliser ce point (déjà vérifié par l'useEffect ci-dessus)
+            pointToShowArrow = popupInfo;
+          } else if (hoveredPointId) {
+            // Sinon, chercher le point survolé UNIQUEMENT dans les points filtrés
+            pointToShowArrow = filteredPoints.find(p => p.properties.id === hoveredPointId) || null;
+          }
 
-        if (!pointToShowArrow) return null;
+          if (!pointToShowArrow) return null;
 
-        const [lng, lat] = pointToShowArrow.geometry.coordinates;
-        if (lng === undefined || lat === undefined) return null;
+          const [lng, lat] = pointToShowArrow.geometry.coordinates;
+          if (lng === undefined || lat === undefined) return null;
 
-        return (
-          <DirectionalArrow
-            mapRef={mapRef}
-            longitude={lng}
-            latitude={lat}
-            bearing={pointToShowArrow.properties.mapboxCamera?.bearing || 0}
-            visible={true}
-          />
-        );
-      })()}
+          return (
+            <DirectionalArrow
+              mapRef={mapRef}
+              longitude={lng}
+              latitude={lat}
+              bearing={pointToShowArrow.properties.mapboxCamera?.bearing || 0}
+              visible={true}
+            />
+          );
+        })()}
+      */}
 
       {/* Contrôles en haut à droite */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+        {/* Bouton Info Shortcuts */}
+        <button
+          onClick={() => setShowShortcutsModal(true)}
+          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded-full shadow-lg w-10 h-10 transition-colors flex items-center justify-center self-center"
+          aria-label="Afficher les raccourcis clavier"
+          title="Raccourcis clavier et contrôles"
+        >
+          <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+
         {/* Bouton Toggle 3D */}
         <button
           onClick={toggle3DView}
@@ -569,7 +569,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           {/* Rotation gauche (↶) */}
           <button
             onClick={rotateLeft}
-            className="px-3 py-2 hover:bg-heritage-cream transition-colors border-r border-heritage-gold/20 flex items-center justify-center"
+            className="flex-1 py-2 hover:bg-heritage-cream transition-colors border-r border-heritage-gold/20 flex items-center justify-center"
             aria-label="Rotation gauche"
             title="Rotation gauche (15°)"
           >
@@ -582,7 +582,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           {/* Rotation droite (↷) */}
           <button
             onClick={rotateRight}
-            className="px-3 py-2 hover:bg-heritage-cream transition-colors flex items-center justify-center"
+            className="flex-1 py-2 hover:bg-heritage-cream transition-colors flex items-center justify-center"
             aria-label="Rotation droite"
             title="Rotation droite (15°)"
           >
@@ -596,8 +596,8 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         {/* Slider de zoom vertical */}
         <div className="bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-2 py-3 flex flex-col items-center gap-2">
           {/* Max zoom label */}
-          <span className="text-[9px] font-serif font-medium text-heritage-ink/50">
-            {MAP_ZOOM_LIMITS.maxZoom}
+          <span className="text-[9px] font-serif font-medium text-heritage-ink/70">
+            Max
           </span>
 
           {/* Container pour le slider roté */}
@@ -627,87 +627,183 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           {/* Current zoom value */}
           <div className="flex items-center justify-center bg-heritage-cream rounded px-1.5 py-0.5 min-w-[32px]">
             <span className="text-[10px] font-serif font-bold text-heritage-bordeaux">
-              {currentZoom.toFixed(1)}
+              x{((currentZoom - MAP_ZOOM_LIMITS.minZoom) / (MAP_ZOOM_LIMITS.maxZoom - MAP_ZOOM_LIMITS.minZoom) * 2 + 1).toFixed(1)}
             </span>
           </div>
 
           {/* Min zoom label */}
-          <span className="text-[9px] font-serif font-medium text-heritage-ink/50">
-            {MAP_ZOOM_LIMITS.minZoom}
+          <span className="text-[9px] font-serif font-medium text-heritage-ink/70">
+            Min
           </span>
         </div>
 
         {/* Reset Nord (boussole) */}
         <button
           onClick={resetNorth}
-          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center"
+          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg p-2 transition-colors flex items-center justify-center"
           aria-label="Réinitialiser orientation"
-          title={`Retour au Nord (actuellement : ${getCardinalDirection(bearing)} - ${Math.round(((bearing % 360) + 360) % 360)}°)`}
+          title={`La carte pointe vers le ${getCardinalDirection(bearing)} (${Math.round(((bearing % 360) + 360) % 360)}°)`}
         >
           <svg
-            className="w-6 h-6 transition-transform duration-300"
-            viewBox="0 0 24 24"
-            style={{ transform: `rotate(${-(bearing || 0)}deg)` }}
+            className="w-20 h-20"
+            viewBox="0 0 64 64"
           >
-            {/* Cercle boussole */}
-            <circle cx="12" cy="12" r="10" fill="white" stroke="#8B4513" strokeWidth={1.5} />
+            {/* Cercle extérieur */}
+            <circle cx="32" cy="32" r="18" fill="white" stroke="#8B4513" strokeWidth="2.5"/>
             
-            {/* Aiguille Nord (rouge vif) */}
-            <path 
-              d="M12 4 L14 12 L12 11 L10 12 Z" 
-              fill="#DC2626" 
-              stroke="#7F1D1D" 
-              strokeWidth={1}
-            />
-            
-            {/* Aiguille Sud (gris) */}
-            <path 
-              d="M12 20 L14 12 L12 13 L10 12 Z" 
-              fill="#6B7280" 
-              stroke="#374151" 
-              strokeWidth={1}
-            />
-            
-            {/* Point central */}
-            <circle cx="12" cy="12" r="2" fill="#8B4513" />
-            
-            {/* Lettre N (Nord) */}
+            {/* Points cardinaux FIXES (ne tournent jamais) */}
             <text 
-              x="12" 
-              y="6" 
+              x="32" 
+              y="7" 
               textAnchor="middle" 
-              fontSize="4" 
+              dominantBaseline="middle"
+              fontSize="11" 
               fontWeight="bold" 
               fill="#DC2626"
+              fontFamily="serif"
             >
               N
             </text>
+            <text 
+              x="57" 
+              y="32" 
+              textAnchor="middle" 
+              dominantBaseline="middle"
+              fontSize="9" 
+              fill="#666"
+              fontFamily="serif"
+            >
+              E
+            </text>
+            <text 
+              x="32" 
+              y="57" 
+              textAnchor="middle" 
+              dominantBaseline="middle"
+              fontSize="9" 
+              fill="#666"
+              fontFamily="serif"
+            >
+              S
+            </text>
+            <text 
+              x="7" 
+              y="32" 
+              textAnchor="middle" 
+              dominantBaseline="middle"
+              fontSize="9" 
+              fill="#666"
+              fontFamily="serif"
+            >
+              O
+            </text>
+            
+            {/* Aiguille pivotante (indique où regarde la carte) */}
+            <g transform={`rotate(${-(bearing || 0)}, 32, 32)`}>
+              {/* Partie Nord (rouge) */}
+              <path 
+                d="M32 16 L34 32 L32 34 L30 32 Z" 
+                fill="#DC2626"
+                stroke="#7F1D1D"
+                strokeWidth="1"
+              />
+              {/* Partie Sud (gris) */}
+              <path 
+                d="M32 34 L34 32 L32 48 L30 32 Z" 
+                fill="#6B7280"
+                stroke="#374151"
+                strokeWidth="1"
+              />
+            </g>
+            
+            {/* Point central */}
+            <circle cx="32" cy="32" r="3" fill="#8B4513"/>
           </svg>
         </button>
       </div>
 
-      {/* Légende */}
-      <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 bg-heritage-cream/95 backdrop-blur-sm p-3 md:p-4 rounded border-2 border-heritage-gold/40 shadow-vintage-lg max-h-[40vh] overflow-y-auto z-10">
-        <h4 className="font-serif font-bold text-xs md:text-sm mb-2 text-heritage-bordeaux tracking-wide">Catégories</h4>
-        <div className="space-y-1 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-base md:text-lg">🏛️</span>
-            <span className="text-[10px] md:text-xs font-serif text-heritage-ink">Urbanisme</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-base md:text-lg">🏗️</span>
-            <span className="text-[10px] md:text-xs font-serif text-heritage-ink">Architecture</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-base md:text-lg">🏭</span>
-            <span className="text-[10px] md:text-xs font-serif text-heritage-ink">Industrie</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-base md:text-lg">🕰️</span>
-            <span className="text-[10px] md:text-xs font-serif text-heritage-ink">Patrimoine disparu</span>
+      {/* Modal Shortcuts */}
+      {showShortcutsModal && (
+        <div 
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setShowShortcutsModal(false)}
+        >
+          <div 
+            className="bg-heritage-cream border-4 border-heritage-gold/60 rounded-lg shadow-2xl p-6 max-w-md mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-serif font-bold text-2xl text-heritage-bordeaux">
+                Comment utiliser la carte ?
+              </h3>
+              <button
+                onClick={() => setShowShortcutsModal(false)}
+                className="text-heritage-ink/50 hover:text-heritage-bordeaux transition-colors"
+                aria-label="Fermer"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Contenu simplifié */}
+            <div className="space-y-4 font-serif text-heritage-ink">
+              {/* Introduction */}
+              <p className="text-base leading-relaxed">
+                Explorez le patrimoine historique de Limoges en naviguant sur la carte interactive.
+              </p>
+
+              {/* Navigation de base */}
+              <div className="bg-white/50 rounded-lg p-4 space-y-3">
+                <h4 className="font-bold text-heritage-bordeaux text-lg mb-2">
+                  🗺️ Naviguer sur la carte
+                </h4>
+                <p className="text-sm leading-relaxed">
+                  <strong>Déplacer :</strong> Cliquez et glissez sur la carte
+                </p>
+                <p className="text-sm leading-relaxed">
+                  <strong>Zoomer :</strong> Utilisez la molette de la souris ou les boutons <span className="font-bold">+</span> et <span className="font-bold">−</span>
+                </p>
+                <p className="text-sm leading-relaxed">
+                  <strong>Pivoter :</strong> Maintenez <kbd className="px-1.5 py-0.5 bg-heritage-cream border border-heritage-gold/40 rounded text-xs font-mono">Ctrl</kbd> et glissez
+                </p>
+              </div>
+
+              {/* Points d'intérêt */}
+              <div className="bg-white/50 rounded-lg p-4 space-y-2">
+                <h4 className="font-bold text-heritage-bordeaux text-lg mb-2">
+                  📍 Découvrir les lieux
+                </h4>
+                <p className="text-sm leading-relaxed">
+                  Cliquez sur les icônes (🏛️ 🏗️ 🏭 🕰️) pour afficher les informations historiques.
+                </p>
+              </div>
+
+              {/* Vue 3D */}
+              <div className="bg-white/50 rounded-lg p-4 space-y-2">
+                <h4 className="font-bold text-heritage-bordeaux text-lg mb-2">
+                  🎬 Mode 3D
+                </h4>
+                <p className="text-sm leading-relaxed">
+                  Appuyez sur la touche <kbd className="px-2 py-1 bg-heritage-cream border border-heritage-gold/40 rounded text-sm font-mono font-bold">3</kbd> pour basculer en vue 3D et explorer la ville en relief.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 pt-4 border-t border-heritage-gold/30">
+              <button
+                onClick={() => setShowShortcutsModal(false)}
+                className="w-full bg-heritage-bordeaux hover:bg-heritage-bordeaux/90 text-white font-serif font-bold py-2 px-4 rounded transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
