@@ -17,9 +17,9 @@ export function ImageComparisonSlider({ point }: Props) {
   const streetViewUrl = getStreetViewStaticUrl(
     properties.streetView.latitude,
     properties.streetView.longitude,
-    properties.streetView.heading,
-    properties.streetView.pitch,
-    properties.streetView.fov,
+    properties.streetView.heading ?? 0,
+    properties.streetView.pitch ?? 0,
+    properties.streetView.fov ?? 90,
     1280, // Width HD pour qualité
     960   // Height HD (ratio 4:3)
   );
@@ -128,7 +128,7 @@ export function ImageComparisonSlider({ point }: Props) {
             {properties.streetView.latitude.toFixed(6)}, {properties.streetView.longitude.toFixed(6)}
           </p>
           <a
-            href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${properties.streetView.latitude},${properties.streetView.longitude}&heading=${properties.streetView.heading}&pitch=${properties.streetView.pitch}&fov=${properties.streetView.fov}`}
+            href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${properties.streetView.latitude},${properties.streetView.longitude}&heading=${properties.streetView.heading ?? 0}&pitch=${properties.streetView.pitch ?? 0}&fov=${properties.streetView.fov ?? 90}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-heritage-bordeaux hover:text-heritage-ink underline"

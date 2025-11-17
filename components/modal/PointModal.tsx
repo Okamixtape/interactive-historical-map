@@ -3,7 +3,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import type { PointFeature } from '@/lib/types';
 import { getCategoryEmoji, getCategoryLabel } from '@/lib/constants';
-import { StreetViewEmbed } from './StreetViewEmbed';
+import { ImageComparisonSlider } from './ImageComparisonSlider';
 import Image from 'next/image';
 
 interface Props {
@@ -123,68 +123,8 @@ export default function PointModal({ point, onClose }: Props) {
           </section>
 
           {/* Comparaison Images */}
-          <section className="grid md:grid-cols-2 gap-6 p-6 bg-heritage-cream/30">
-            {/* Image Historique */}
-            <article className="space-y-3">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-serif font-bold text-heritage-bordeaux flex items-center gap-2">
-                  <span className="text-xl">📜</span>
-                  Vue Historique
-                </h3>
-                <span className="text-sm font-serif font-medium text-heritage-ink bg-heritage-cream px-3 py-1 rounded border border-heritage-gold/30">
-                  {properties.historical.year}
-                </span>
-              </div>
-              <div className="relative aspect-[4/3] bg-sepia-100 rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg group">
-                <Image
-                  src={properties.historical.imageUrl}
-                  alt={`${properties.title} - ${properties.historical.year}`}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  quality={75}
-                  priority
-                />
-              </div>
-              <div className="bg-white rounded border border-heritage-gold/20 p-3 text-xs font-serif text-heritage-ink/80 space-y-1.5">
-                <p>
-                  <strong className="text-heritage-bordeaux">Source :</strong> {properties.historical.source}
-                </p>
-                {properties.historical.archiveReference && (
-                  <p>
-                    <strong className="text-heritage-bordeaux">Référence :</strong>{' '}
-                    {properties.historical.archiveReference}
-                  </p>
-                )}
-              </div>
-            </article>
-
-            {/* Street View Actuel */}
-            <article className="space-y-3">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-serif font-bold text-heritage-bordeaux flex items-center gap-2">
-                  <span className="text-xl">📍</span>
-                  Vue Actuelle
-                </h3>
-                <span className="text-sm font-serif font-medium text-heritage-ink bg-heritage-cream px-3 py-1 rounded border border-heritage-gold/30">
-                  2024
-                </span>
-              </div>
-              <div className="relative aspect-[4/3] bg-gray-100 rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg">
-                <StreetViewEmbed
-                  latitude={properties.streetView.latitude}
-                  longitude={properties.streetView.longitude}
-                  heading={properties.streetView.heading}
-                  pitch={properties.streetView.pitch}
-                  fov={properties.streetView.fov}
-                />
-              </div>
-              <div className="bg-white rounded border border-heritage-gold/20 p-3 text-xs font-serif text-heritage-ink/80">
-                <p>
-                  <strong className="text-heritage-bordeaux">Coordonnées :</strong> {properties.streetView.latitude.toFixed(6)}, {properties.streetView.longitude.toFixed(6)}
-                </p>
-              </div>
-            </article>
+          <section className="p-6 bg-heritage-cream/30">
+            <ImageComparisonSlider point={point} />
           </section>
 
         </div>
