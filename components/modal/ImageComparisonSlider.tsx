@@ -15,14 +15,15 @@ export function ImageComparisonSlider({ point }: Props) {
 
   // Générer l'URL Street View statique (optimisée pour le slider)
   // Format 2:1 pour matcher les photos historiques (1600×803, 3424×1718)
+  // IMPORTANT : Google Street View Static API limite gratuite = 640×640px max
   const streetViewUrl = getStreetViewStaticUrl(
     properties.streetView.latitude,
     properties.streetView.longitude,
     properties.streetView.heading ?? 0,
     properties.streetView.pitch ?? 0,
     properties.streetView.fov ?? 90,
-    1280, // Width HD pour qualité
-    640   // Height HD (ratio 2:1 pour cohérence avec archives)
+    640, // Width max API gratuite
+    320  // Height (ratio 2:1 respecté)
   );
 
   return (
