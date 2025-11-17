@@ -17,13 +17,13 @@ export function ImageComparisonSlider({ point }: Props) {
   const isPortrait = properties.historical.orientation === 'portrait';
   
   // Dimensions adaptées selon l'orientation
-  // Portrait : 400×533 (ratio 3:4, hauteur réduite pour modal)
+  // Portrait : 360×480 (ratio 3:4, optimisé pour modal)
   // Paysage : 640×320 (ratio 2:1)
-  const [width, height] = isPortrait ? [400, 533] : [640, 320];
+  const [width, height] = isPortrait ? [360, 480] : [640, 320];
   
   // Aspect ratio CSS correspondant + largeur max pour portrait
   const aspectRatio = isPortrait ? 'aspect-[3/4]' : 'aspect-[2/1]';
-  const maxWidth = isPortrait ? 'max-w-md' : ''; // max-w-md = 448px (limite hauteur à ~597px)
+  const maxWidth = isPortrait ? 'max-w-sm' : ''; // max-w-sm = 384px (limite hauteur à ~512px)
 
   // Générer l'URL Street View statique (optimisée pour le slider)
   // IMPORTANT : Google Street View Static API limite gratuite = 640×640px max

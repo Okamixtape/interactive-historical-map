@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, memo, useRef, useEffect } from 'react';
+import { useState, useCallback, memo, useRef, useEffect, useMemo } from 'react';
 import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
@@ -31,6 +31,16 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const filteredPoints = activeFilter === 'all'
     ? points
     : points.filter(p => p.properties.category === activeFilter);
+
+  // Mémoïser le point actif pour la flèche (évite re-renders et clignotement)
+  const activeArrowPoint = useMemo(() => {
+    // Priorité : popup ouverte > point survolé
+    if (popupInfo) return popupInfo;
+    if (hoveredPointId) {
+      return points.find(p => p.properties.id === hoveredPointId) || null;
+    }
+    return null;
+  }, [popupInfo, hoveredPointId, points]);
 
   // Cleanup explicite pour compatibilité React StrictMode
   // Résout le problème de double render qui cause accumulation ressources GPU
@@ -339,6 +349,27 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         maxZoom={MAP_ZOOM_LIMITS.maxZoom}
         onMove={handleMapMove}
       >
+        {/* Flèche directionnelle indiquant l'angle de prise de vue */}
+        {/* IMPORTANT : Rendue AVANT les marqueurs pour apparaître en dessous */}
+        {activeArrowPoint && (() => {
+          const [lng, lat] = activeArrowPoint.geometry.coordinates;
+          if (lng === undefined || lat === undefined) return null;
+
+          // Utiliser streetView.heading (direction de la caméra)
+          const heading = activeArrowPoint.properties.streetView?.heading ?? 0;
+
+          return (
+            <DirectionalArrow
+              key={`arrow-${activeArrowPoint.properties.id}`}
+              longitude={lng}
+              latitude={lat}
+              bearing={heading}
+              mapBearing={bearing}
+              visible={true}
+            />
+          );
+        })()}
+
         {filteredPoints.map((point) => {
           const [lng, lat] = point.geometry.coordinates;
           if (lng === undefined || lat === undefined) return null;
@@ -436,39 +467,6 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               </button>
             </div>
           </Popup>
-          );
-        })()}
-
-        {/* Flèche directionnelle indiquant l'angle de prise de vue */}
-        {(() => {
-          // Afficher la flèche uniquement pour les points visibles
-          // Priorité : popup ouverte > point survolé (mais seulement si visible dans le filtre)
-          let pointToShowArrow = null;
-
-          if (popupInfo) {
-            // Si popup ouverte, utiliser ce point
-            pointToShowArrow = popupInfo;
-          } else if (hoveredPointId) {
-            // Sinon, chercher le point survolé UNIQUEMENT dans les points filtrés
-            pointToShowArrow = filteredPoints.find(p => p.properties.id === hoveredPointId) || null;
-          }
-
-          if (!pointToShowArrow) return null;
-
-          const [lng, lat] = pointToShowArrow.geometry.coordinates;
-          if (lng === undefined || lat === undefined) return null;
-
-          // Utiliser streetView.heading (direction de la caméra)
-          const heading = pointToShowArrow.properties.streetView?.heading ?? 0;
-
-          return (
-            <DirectionalArrow
-              longitude={lng}
-              latitude={lat}
-              bearing={heading}
-              mapBearing={bearing}
-              visible={true}
-            />
           );
         })()}
 
