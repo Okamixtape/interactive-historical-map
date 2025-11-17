@@ -4,7 +4,7 @@ import { useState, useCallback, memo, useRef, useEffect } from 'react';
 import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
-import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji, LIMOGES_BOUNDS, MAP_ZOOM_LIMITS } from '@/lib/constants';
+import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji, LIMOGES_BOUNDS, MAP_ZOOM_LIMITS, getCardinalDirection } from '@/lib/constants';
 import DirectionalArrow from './DirectionalArrow';
 
 interface Props {
@@ -149,7 +149,12 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const rotateLeft = useCallback(() => {
     if (!mapRef.current) return;
     const map = mapRef.current.getMap();
-    const newBearing = map.getBearing() + 15; // Rotation +15° par clic (sens horaire)
+    const currentBearing = map.getBearing();
+    const newBearing = currentBearing + 15; // Rotation +15° par clic (sens horaire)
+
+    // ✅ FIX : Mettre à jour bearing state immédiatement
+    setBearing(newBearing);
+
     map.easeTo({
       bearing: newBearing,
       duration: 300
@@ -159,7 +164,12 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const rotateRight = useCallback(() => {
     if (!mapRef.current) return;
     const map = mapRef.current.getMap();
-    const newBearing = map.getBearing() - 15; // Rotation -15° par clic (sens anti-horaire)
+    const currentBearing = map.getBearing();
+    const newBearing = currentBearing - 15; // Rotation -15° par clic (sens anti-horaire)
+
+    // ✅ FIX : Mettre à jour bearing state immédiatement
+    setBearing(newBearing);
+
     map.easeTo({
       bearing: newBearing,
       duration: 300
@@ -169,6 +179,10 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const resetNorth = useCallback(() => {
     if (!mapRef.current) return;
     const map = mapRef.current.getMap();
+
+    // ✅ FIX : Mettre à jour bearing state immédiatement
+    setBearing(0);
+
     map.easeTo({
       bearing: 0,
       // Garde le pitch actuel (ne reset pas la vue 3D)
@@ -388,7 +402,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           onClick={resetNorth}
           className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center"
           aria-label="Réinitialiser orientation"
-          title={`Retour au Nord (actuellement ${Math.round(bearing || 0)}°)`}
+          title={`Retour au Nord (actuellement : ${getCardinalDirection(bearing)} - ${Math.round(bearing || 0)}°)`}
         >
           <svg
             className="w-6 h-6 transition-transform duration-300"
