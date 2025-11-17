@@ -168,10 +168,9 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     const map = mapRef.current.getMap();
     map.easeTo({
       bearing: 0,
-      pitch: 0, // Reset 3D aussi
+      // Garde le pitch actuel (ne reset pas la vue 3D)
       duration: 500
     });
-    setIs3DView(false); // Reset état 3D
   }, []);
 
   return (
@@ -301,16 +300,25 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         {/* Bouton Toggle 3D */}
         <button
           onClick={toggle3DView}
-          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center gap-2"
+          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2"
           aria-label={is3DView ? "Passer en vue 2D" : "Passer en vue 3D"}
           title={is3DView ? "Vue 2D (Appuyez sur 3)" : "Vue 3D (Appuyez sur 3)"}
         >
           <span className="font-serif font-bold text-sm text-heritage-bordeaux">
             {is3DView ? "2D" : "3D"}
           </span>
-          <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
+          {is3DView ? (
+            // Icône plan 2D (rectangle plat)
+            <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="4" y="8" width="16" height="8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 8l8-4 8 4M4 16l8 4 8-4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            // Icône cube 3D
+            <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          )}
         </button>
 
         {/* Contrôles de zoom */}
@@ -374,21 +382,46 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           onClick={resetNorth}
           className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center"
           aria-label="Réinitialiser orientation"
-          title="Retour au Nord (0°)"
+          title={`Retour au Nord (actuellement ${Math.round(bearing)}°)`}
         >
           <svg
-            className="w-5 h-5 text-heritage-bordeaux transition-transform duration-300"
-            fill="none"
-            stroke="currentColor"
+            className="w-6 h-6 transition-transform duration-300"
             viewBox="0 0 24 24"
             style={{ transform: `rotate(${-bearing}deg)` }}
           >
             {/* Cercle boussole */}
-            <circle cx="12" cy="12" r="9" strokeWidth={2} />
-            {/* Croix cardinale */}
-            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" strokeWidth={2} strokeLinecap="round" />
-            {/* Aiguille Nord (rouge) */}
-            <path d="M12 7l2 5-2 1-2-1z" fill="currentColor" />
+            <circle cx="12" cy="12" r="10" fill="white" stroke="#8B4513" strokeWidth={1.5} />
+            
+            {/* Aiguille Nord (rouge vif) */}
+            <path 
+              d="M12 4 L14 12 L12 11 L10 12 Z" 
+              fill="#DC2626" 
+              stroke="#7F1D1D" 
+              strokeWidth={1}
+            />
+            
+            {/* Aiguille Sud (gris) */}
+            <path 
+              d="M12 20 L14 12 L12 13 L10 12 Z" 
+              fill="#6B7280" 
+              stroke="#374151" 
+              strokeWidth={1}
+            />
+            
+            {/* Point central */}
+            <circle cx="12" cy="12" r="2" fill="#8B4513" />
+            
+            {/* Lettre N (Nord) */}
+            <text 
+              x="12" 
+              y="6" 
+              textAnchor="middle" 
+              fontSize="4" 
+              fontWeight="bold" 
+              fill="#DC2626"
+            >
+              N
+            </text>
           </svg>
         </button>
       </div>

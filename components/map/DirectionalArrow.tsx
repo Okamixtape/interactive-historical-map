@@ -19,6 +19,7 @@ export default function DirectionalArrow({
   visible
 }: DirectionalArrowProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [mapBearing, setMapBearing] = useState(0);
   const arrowRef = useRef<HTMLDivElement>(null);
 
   // Convertir lng/lat en coordonnées écran (x/y pixels)
@@ -45,14 +46,24 @@ export default function DirectionalArrow({
     // Calculer position initiale
     updatePosition();
 
-    // Recalculer quand la carte bouge (pan/zoom)
+    // Recalculer quand la carte bouge (pan/zoom/rotate)
     const map = mapRef.current.getMap();
+    
+    const updateBearing = () => {
+      setMapBearing(map.getBearing());
+    };
+    
     map.on('move', updatePosition);
     map.on('zoom', updatePosition);
+    map.on('rotate', updateBearing);
+    
+    // Init bearing
+    updateBearing();
 
     return () => {
       map.off('move', updatePosition);
       map.off('zoom', updatePosition);
+      map.off('rotate', updateBearing);
     };
   }, [mapRef, longitude, latitude, visible]);
 
@@ -65,7 +76,8 @@ export default function DirectionalArrow({
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        transform: `translate(-50%, -50%) rotate(${bearing}deg)`,
+        // Rotation = bearing de la photo - bearing de la carte
+        transform: `translate(-50%, -50%) rotate(${bearing - mapBearing}deg)`,
         transition: 'transform 0.3s ease-out',
       }}
       aria-hidden="true"
