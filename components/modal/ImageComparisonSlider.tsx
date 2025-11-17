@@ -14,6 +14,7 @@ export function ImageComparisonSlider({ point }: Props) {
   const [sliderPosition, setSliderPosition] = useState(50);
 
   // Générer l'URL Street View statique (optimisée pour le slider)
+  // Format 2:1 pour matcher les photos historiques (1600×803, 3424×1718)
   const streetViewUrl = getStreetViewStaticUrl(
     properties.streetView.latitude,
     properties.streetView.longitude,
@@ -21,7 +22,7 @@ export function ImageComparisonSlider({ point }: Props) {
     properties.streetView.pitch ?? 0,
     properties.streetView.fov ?? 90,
     1280, // Width HD pour qualité
-    960   // Height HD (ratio 4:3)
+    640   // Height HD (ratio 2:1 pour cohérence avec archives)
   );
 
   return (
@@ -47,7 +48,8 @@ export function ImageComparisonSlider({ point }: Props) {
       </div>
 
       {/* Slider de comparaison */}
-      <div className="relative aspect-[16/9] rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg">
+      {/* Format 2:1 panoramique pour correspondre aux photos historiques */}
+      <div className="relative aspect-[2/1] rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg">
         <ReactCompareSlider
           position={sliderPosition}
           onPositionChange={setSliderPosition}

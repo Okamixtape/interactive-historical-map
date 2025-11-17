@@ -90,9 +90,9 @@
         "streetView": {
           "latitude": 45.8297006,
           "longitude": 1.2679901,
-          "heading": 223,
+          "heading": 220,
           "pitch": -7,
-          "fov": 64
+          "fov": 52
         },
         "mapboxCamera": {
           "bearing": 223,
@@ -126,7 +126,7 @@
           "longitude": 1.2551924,
           "heading": 294,
           "pitch": 5,
-          "fov": 38
+          "fov": 50
         },
         "mapboxCamera": {
           "bearing": 294,
