@@ -308,10 +308,10 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             {is3DView ? "2D" : "3D"}
           </span>
           {is3DView ? (
-            // Icône plan 2D (rectangle plat)
+            // Icône plan 2D (carte plate vue du dessus)
             <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect x="4" y="8" width="16" height="8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M4 8l8-4 8 4M4 16l8 4 8-4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="3" y="3" width="18" height="18" strokeWidth={2} rx="1" />
+              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" strokeWidth={1.5} opacity="0.5" />
             </svg>
           ) : (
             // Icône cube 3D
@@ -382,12 +382,12 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           onClick={resetNorth}
           className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center"
           aria-label="Réinitialiser orientation"
-          title={`Retour au Nord (actuellement ${Math.round(bearing)}°)`}
+          title={`Retour au Nord (actuellement ${Math.round(bearing || 0)}°)`}
         >
           <svg
             className="w-6 h-6 transition-transform duration-300"
             viewBox="0 0 24 24"
-            style={{ transform: `rotate(${-bearing}deg)` }}
+            style={{ transform: `rotate(${-(bearing || 0)}deg)` }}
           >
             {/* Cercle boussole */}
             <circle cx="12" cy="12" r="10" fill="white" stroke="#8B4513" strokeWidth={1.5} />
