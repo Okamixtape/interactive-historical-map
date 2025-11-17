@@ -273,12 +273,21 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     if (!mapRef.current) return undefined;
 
     const map = mapRef.current.getMap();
+    if (!map) return undefined;
 
     const handleMapLoad = () => {
       try {
+        // ✅ SÉCURITÉ : Vérifier que la carte est chargée et le style aussi
+        if (!map.isStyleLoaded()) {
+          console.warn('Style pas encore chargé, on attend...');
+          setTimeout(handleMapLoad, 100);
+          return;
+        }
+
         if (show3DBuildings) {
           // Ajouter la layer des bâtiments 3D si elle n'existe pas
           if (!map.getLayer('building-3d')) {
+            console.log('Ajout layer bâtiments 3D...');
             map.addLayer({
               id: 'building-3d',
               source: 'composite',
@@ -309,30 +318,37 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                 'fill-extrusion-opacity': 0.6
               }
             });
+            console.log('✅ Layer bâtiments 3D ajoutée');
           } else {
             // Si la layer existe déjà, la rendre visible
+            console.log('Layer bâtiments 3D existe, on la rend visible');
             map.setLayoutProperty('building-3d', 'visibility', 'visible');
           }
         } else {
           // Masquer la layer si elle existe
           if (map.getLayer('building-3d')) {
+            console.log('Masquage layer bâtiments 3D');
             map.setLayoutProperty('building-3d', 'visibility', 'none');
           }
         }
       } catch (error) {
-        console.error('Erreur lors de la gestion des bâtiments 3D:', error);
+        console.error('❌ Erreur lors de la gestion des bâtiments 3D:', error);
+        if (error instanceof Error) {
+          console.error('Stack trace:', error.stack);
+        }
       }
     };
 
-    if (map.loaded()) {
+    // ✅ Attendre que le style soit complètement chargé
+    if (map.isStyleLoaded()) {
       handleMapLoad();
     } else {
-      map.on('load', handleMapLoad);
+      map.on('style.load', handleMapLoad);
     }
 
     return () => {
       if (map && map.off) {
-        map.off('load', handleMapLoad);
+        map.off('style.load', handleMapLoad);
       }
     };
   }, [show3DBuildings]);
