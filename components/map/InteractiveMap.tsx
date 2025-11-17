@@ -23,7 +23,6 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const [is3DView, setIs3DView] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [show3DBuildings, setShow3DBuildings] = useState(false);
-  const [showTerrain, setShowTerrain] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(INITIAL_VIEW_STATE.zoom);
   const mapRef = useRef<MapRef>(null);
 
@@ -56,11 +55,10 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     const map = mapRef.current.getMap();
     const targetPitch = is3DView ? 0 : 60; // 0 = 2D, 60 = 3D
 
-    // ✅ SÉCURITÉ : Si retour en 2D, désactiver bâtiments et terrain
+    // ✅ SÉCURITÉ : Si retour en 2D, désactiver bâtiments
     if (is3DView) {
       // On passe de 3D → 2D
       setShow3DBuildings(false);
-      setShowTerrain(false);
     }
 
     // Notifier que la transition commence (désactive animations sidebar)
@@ -211,6 +209,14 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     mapRef.current.getMap().zoomOut();
   }, []);
 
+  // Fonction pour changer le zoom via le slider
+  const handleZoomChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!mapRef.current) return;
+    const newZoom = parseFloat(event.target.value);
+    setCurrentZoom(newZoom); // Update state immédiatement pour UI responsive
+    mapRef.current.getMap().zoomTo(newZoom, { duration: 200 });
+  }, []);
+
   // Fonctions de rotation bearing
   const rotateLeft = useCallback(() => {
     if (!mapRef.current) return;
@@ -256,33 +262,11 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     });
   }, []);
 
-  // Toggle bâtiments 3D (exclusif avec terrain pour éviter crash GPU)
+  // Toggle bâtiments 3D
   const toggle3DBuildings = useCallback(() => {
     if (!is3DView) return; // Ne fonctionne qu'en mode 3D
-
-    if (!show3DBuildings) {
-      // On active les bâtiments → désactiver le terrain
-      setShow3DBuildings(true);
-      setShowTerrain(false);
-    } else {
-      // On désactive les bâtiments
-      setShow3DBuildings(false);
-    }
+    setShow3DBuildings(!show3DBuildings);
   }, [show3DBuildings, is3DView]);
-
-  // Toggle relief du terrain (exclusif avec bâtiments pour éviter crash GPU)
-  const toggleTerrain = useCallback(() => {
-    if (!is3DView) return; // Ne fonctionne qu'en mode 3D
-
-    if (!showTerrain) {
-      // On active le terrain → désactiver les bâtiments
-      setShowTerrain(true);
-      setShow3DBuildings(false);
-    } else {
-      // On désactive le terrain
-      setShowTerrain(false);
-    }
-  }, [showTerrain, is3DView, show3DBuildings]);
 
   // Gérer l'affichage des bâtiments 3D
   useEffect(() => {
@@ -352,52 +336,6 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
       }
     };
   }, [show3DBuildings]);
-
-  // Gérer l'affichage du relief du terrain
-  useEffect(() => {
-    if (!mapRef.current) return undefined;
-
-    const map = mapRef.current.getMap();
-
-    const handleMapLoad = () => {
-      try {
-        if (showTerrain) {
-          // Ajouter la source de terrain si elle n'existe pas
-          if (!map.getSource('mapbox-dem')) {
-            map.addSource('mapbox-dem', {
-              type: 'raster-dem',
-              url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-              tileSize: 512,
-              maxzoom: 14
-            });
-          }
-
-          // Activer le terrain 3D
-          map.setTerrain({
-            source: 'mapbox-dem',
-            exaggeration: 1.5 // Exagérer le relief pour mieux voir les dénivelés
-          });
-        } else {
-          // Désactiver le terrain
-          map.setTerrain(null);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la gestion du terrain:', error);
-      }
-    };
-
-    if (map.loaded()) {
-      handleMapLoad();
-    } else {
-      map.on('load', handleMapLoad);
-    }
-
-    return () => {
-      if (map && map.off) {
-        map.off('load', handleMapLoad);
-      }
-    };
-  }, [showTerrain]);
 
   return (
     <div className="relative w-full h-screen">
@@ -583,29 +521,6 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           </span>
         </button>
 
-        {/* Toggle Relief du Terrain - Disponible uniquement en mode 3D */}
-        <button
-          onClick={toggleTerrain}
-          disabled={!is3DView}
-          className={`border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center gap-2 ${
-            !is3DView
-              ? 'bg-gray-100 cursor-not-allowed opacity-50'
-              : showTerrain
-                ? 'bg-heritage-cream ring-2 ring-heritage-bordeaux/30'
-                : 'bg-white hover:bg-heritage-cream'
-          }`}
-          aria-label={!is3DView ? "Relief du terrain (disponible en mode 3D uniquement)" : showTerrain ? "Masquer le relief du terrain" : "Afficher le relief du terrain"}
-          title={!is3DView ? "Activez d'abord le mode 3D pour afficher le relief du terrain" : showTerrain ? "Masquer le relief du terrain (dénivelés réels de Limoges)" : "Afficher le relief du terrain (dénivelés réels de Limoges)"}
-        >
-          <svg className={`w-4 h-4 ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21L12 3l9 18H3z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l4-8 4 8" opacity="0.5" />
-          </svg>
-          <span className={`font-serif text-xs font-medium ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`}>
-            Relief
-          </span>
-        </button>
-
         {/* Contrôles de zoom */}
         <div className="bg-white border-2 border-heritage-gold/40 rounded shadow-lg overflow-hidden">
           {/* Zoom In */}
@@ -662,29 +577,37 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           </button>
         </div>
 
-        {/* Indicateur de zoom */}
-        <div className="bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-3">
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-heritage-bordeaux flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" strokeWidth={2} />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35" />
-            </svg>
-            <div className="flex-1">
-              <div className="h-1.5 bg-heritage-cream rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-heritage-bordeaux transition-all duration-300"
-                  style={{
-                    width: `${((currentZoom - MAP_ZOOM_LIMITS.minZoom) / (MAP_ZOOM_LIMITS.maxZoom - MAP_ZOOM_LIMITS.minZoom)) * 100}%`
-                  }}
-                />
-              </div>
-              <div className="flex justify-between mt-1">
-                <span className="text-[9px] font-serif text-heritage-ink/50">{MAP_ZOOM_LIMITS.minZoom}</span>
-                <span className="text-[10px] font-serif font-medium text-heritage-bordeaux">{currentZoom.toFixed(1)}</span>
-                <span className="text-[9px] font-serif text-heritage-ink/50">{MAP_ZOOM_LIMITS.maxZoom}</span>
-              </div>
-            </div>
+        {/* Slider de zoom vertical */}
+        <div className="bg-white border-2 border-heritage-gold/40 rounded shadow-lg px-2 py-3 flex flex-col items-center gap-2">
+          {/* Max zoom label */}
+          <span className="text-[9px] font-serif font-medium text-heritage-ink/50">
+            {MAP_ZOOM_LIMITS.maxZoom}
+          </span>
+
+          {/* Slider vertical */}
+          <input
+            type="range"
+            min={MAP_ZOOM_LIMITS.minZoom}
+            max={MAP_ZOOM_LIMITS.maxZoom}
+            step="0.1"
+            value={currentZoom}
+            onChange={handleZoomChange}
+            className="zoom-slider"
+            aria-label="Niveau de zoom"
+            title={`Zoom: ${currentZoom.toFixed(1)}`}
+          />
+
+          {/* Current zoom value */}
+          <div className="flex items-center justify-center bg-heritage-cream rounded px-1.5 py-0.5 min-w-[32px]">
+            <span className="text-[10px] font-serif font-bold text-heritage-bordeaux">
+              {currentZoom.toFixed(1)}
+            </span>
           </div>
+
+          {/* Min zoom label */}
+          <span className="text-[9px] font-serif font-medium text-heritage-ink/50">
+            {MAP_ZOOM_LIMITS.minZoom}
+          </span>
         </div>
 
         {/* Reset Nord (boussole) */}

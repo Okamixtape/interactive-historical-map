@@ -67,3 +67,90 @@
   color: #b8860b;
   transform: scale(1.1);
 }
+
+/* Slider de zoom vertical - Style custom */
+.zoom-slider {
+  -webkit-appearance: slider-vertical;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  width: 6px;
+  height: 120px;
+}
+
+/* Pour Firefox - rotate le slider horizontal pour le rendre vertical */
+@-moz-document url-prefix() {
+  .zoom-slider {
+    width: 120px;
+    height: 6px;
+    transform: rotate(270deg);
+    transform-origin: center;
+  }
+}
+
+/* Track (rail) du slider - Firefox */
+.zoom-slider::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  background: #f5f1e8;
+  border-radius: 3px;
+  border: 1px solid rgba(184, 134, 11, 0.3);
+}
+
+/* Track (rail) du slider - Webkit (Chrome, Safari) - vertical natif */
+.zoom-slider::-webkit-slider-runnable-track {
+  width: 6px;
+  height: 120px;
+  background: #f5f1e8;
+  border-radius: 3px;
+  border: 1px solid rgba(184, 134, 11, 0.3);
+}
+
+/* Thumb (curseur) du slider - Firefox */
+.zoom-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #6e4027;
+  border: 2px solid #b8860b;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(110, 64, 39, 0.3);
+  transition: all 0.2s;
+}
+
+.zoom-slider::-moz-range-thumb:hover {
+  background: #8B4513;
+  transform: scale(1.15);
+  box-shadow: 0 3px 8px rgba(110, 64, 39, 0.4);
+}
+
+.zoom-slider::-moz-range-thumb:active {
+  cursor: grabbing;
+  transform: scale(0.95);
+}
+
+/* Thumb (curseur) du slider - Webkit (Chrome, Safari) */
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #6e4027;
+  border: 2px solid #b8860b;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(110, 64, 39, 0.3);
+  transition: all 0.2s;
+}
+
+.zoom-slider::-webkit-slider-thumb:hover {
+  background: #8B4513;
+  transform: scale(1.15);
+  box-shadow: 0 3px 8px rgba(110, 64, 39, 0.4);
+}
+
+.zoom-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(0.95);
+}
