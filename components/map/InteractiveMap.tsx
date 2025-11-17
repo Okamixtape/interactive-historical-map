@@ -14,13 +14,19 @@ interface Props {
   onTransitionStateChange?: (isTransitioning: boolean) => void;
   selectedPoint?: PointFeature | null;
   onHoverPoint?: (poiId: string | null) => void;
+  activeFilter?: 'all' | 'urbanisme' | 'architecture' | 'industrie' | 'patrimoine-disparu';
 }
 
-function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint, onHoverPoint }: Props) {
+function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint, onHoverPoint, activeFilter = 'all' }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const [is3DView, setIs3DView] = useState(false);
   const [bearing, setBearing] = useState(0);
   const mapRef = useRef<MapRef>(null);
+
+  // Filtrer les points à afficher sur la carte
+  const filteredPoints = activeFilter === 'all' 
+    ? points 
+    : points.filter(p => p.properties.category === activeFilter);
 
   // Cleanup explicite pour compatibilité React StrictMode
   // Résout le problème de double render qui cause accumulation ressources GPU
@@ -75,7 +81,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
 
   // Tracker les changements de bearing pour mise à jour UI
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current) return undefined;
 
     const map = mapRef.current.getMap();
 
@@ -84,7 +90,9 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     };
 
     map.on('rotate', updateBearing);
-    return () => map.off('rotate', updateBearing);
+    return () => {
+      map.off('rotate', updateBearing);
+    };
   }, []);
 
   const handleMarkerClick = useCallback((event: React.MouseEvent, point: PointFeature) => {
@@ -138,7 +146,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const rotateLeft = useCallback(() => {
     if (!mapRef.current) return;
     const map = mapRef.current.getMap();
-    const newBearing = map.getBearing() - 15; // Rotation -15° par clic
+    const newBearing = map.getBearing() + 15; // Rotation +15° par clic (sens horaire)
     map.easeTo({
       bearing: newBearing,
       duration: 300
@@ -148,7 +156,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const rotateRight = useCallback(() => {
     if (!mapRef.current) return;
     const map = mapRef.current.getMap();
-    const newBearing = map.getBearing() + 15; // Rotation +15° par clic
+    const newBearing = map.getBearing() - 15; // Rotation -15° par clic (sens anti-horaire)
     map.easeTo({
       bearing: newBearing,
       duration: 300
@@ -175,7 +183,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         mapStyle={MAP_STYLE}
         mapboxAccessToken={MAPBOX_TOKEN}
       >
-        {points.map((point) => {
+        {filteredPoints.map((point) => {
           const [lng, lat] = point.geometry.coordinates;
           if (lng === undefined || lat === undefined) return null;
           
@@ -274,11 +282,14 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         const hoveredPoint = points.find(p => p.properties.id === hoveredPointId);
         if (!hoveredPoint) return null;
 
+        const [lng, lat] = hoveredPoint.geometry.coordinates;
+        if (lng === undefined || lat === undefined) return null;
+
         return (
           <DirectionalArrow
             mapRef={mapRef}
-            longitude={hoveredPoint.geometry.coordinates[0]}
-            latitude={hoveredPoint.geometry.coordinates[1]}
+            longitude={lng}
+            latitude={lat}
             bearing={hoveredPoint.properties.mapboxCamera?.bearing || 0}
             visible={true}
           />
@@ -352,7 +363,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             title="Rotation droite (15°)"
           >
             <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 1 1-6.74-8.74L11 6" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v5h5" />
             </svg>
           </button>

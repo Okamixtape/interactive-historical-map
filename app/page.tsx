@@ -54,12 +54,13 @@ export default function HomePage() {
         className="w-full h-screen"
       >
         <InteractiveMap
-          points={filteredPoints}
+          points={points}
           onPointSelect={setSelectedPoint}
           hoveredPointId={hoveredPointId}
           onTransitionStateChange={setIsTransitioning}
           selectedPoint={selectedPoint}
           onHoverPoint={setHoveredPointId}
+          activeFilter={activeFilter}
         />
       </div>
 
