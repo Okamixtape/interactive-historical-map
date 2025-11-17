@@ -383,6 +383,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               longitude={lng}
               latitude={lat}
               anchor="bottom"
+              style={{ zIndex: 10 }}
             >
               <button
                 onClick={(e) => handleMarkerClick(e, point)}
