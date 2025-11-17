@@ -123,24 +123,11 @@ export default function PointModal({ point, onClose }: Props) {
           </section>
 
           {/* Comparaison Images */}
-          <section className="p-6 bg-heritage-cream/30">
+          <section className="p-4 bg-heritage-cream/30">
             <ImageComparisonSlider point={point} />
           </section>
 
         </div>
-
-        {/* Footer */}
-        <footer className="border-t-2 border-heritage-gold/30 px-6 py-4 bg-white flex items-center justify-between">
-          <p className="text-xs font-serif italic text-heritage-ink/60">
-            Comparez le passé et le présent de Limoges
-          </p>
-          <button
-            onClick={handleClose}
-            className="px-6 py-2.5 bg-heritage-bordeaux text-heritage-cream rounded border-2 border-heritage-gold/40 hover:bg-heritage-ink hover:shadow-vintage-lg transition-all font-serif font-medium"
-          >
-            Fermer
-          </button>
-        </footer>
       </div>
     </div>
   );
