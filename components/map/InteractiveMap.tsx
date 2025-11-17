@@ -360,7 +360,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
 
           return (
             <DirectionalArrow
-              key={`arrow-${activeArrowPoint.properties.id}`}
+              key="directional-arrow"
               longitude={lng}
               latitude={lat}
               bearing={heading}

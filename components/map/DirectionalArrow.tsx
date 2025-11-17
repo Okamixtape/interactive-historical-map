@@ -27,22 +27,22 @@ function DirectionalArrow({
     <Marker
       longitude={longitude}
       latitude={latitude}
-      anchor="center"
+      anchor="bottom"
       style={{ pointerEvents: 'none', zIndex: 1 }}
     >
       <div
-        className="transform transition-transform duration-300"
         style={{
           transform: `rotate(${adjustedBearing}deg)`,
+          willChange: 'transform',
         }}
         aria-hidden="true"
       >
         {/* Flèche directionnelle élégante (heritage-bordeaux) */}
         <svg width="120" height="120" viewBox="0 0 120 120" className="drop-shadow-md">
-          {/* Ligne de la flèche (part du centre du marqueur) */}
+          {/* Ligne de la flèche (part du bas du marqueur) */}
           <line
             x1="60"
-            y1="60"
+            y1="110"
             x2="60"
             y2="15"
             stroke="#8B4513"
