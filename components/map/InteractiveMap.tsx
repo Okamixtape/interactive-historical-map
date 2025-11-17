@@ -15,9 +15,10 @@ interface Props {
   selectedPoint?: PointFeature | null;
   onHoverPoint?: (poiId: string | null) => void;
   activeFilter?: 'all' | 'urbanisme' | 'architecture' | 'industrie' | 'patrimoine-disparu';
+  pointIdToOpenPopup?: string | null;
 }
 
-function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint, onHoverPoint, activeFilter = 'all' }: Props) {
+function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionStateChange, selectedPoint, onHoverPoint, activeFilter = 'all', pointIdToOpenPopup }: Props) {
   const [popupInfo, setPopupInfo] = useState<PointFeature | null>(null);
   const [is3DView, setIs3DView] = useState(false);
   const [bearing, setBearing] = useState(0);
@@ -97,6 +98,37 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
       map.off('rotate', updateBearing);
     };
   }, []);
+
+  // Ouvrir la popup quand un point est sélectionné depuis la sidebar
+  useEffect(() => {
+    if (!pointIdToOpenPopup || !mapRef.current) return;
+
+    const point = points.find(p => p.properties.id === pointIdToOpenPopup);
+    if (!point) return;
+
+    // Ouvrir la popup
+    setPopupInfo(point);
+
+    // Centrer la carte sur ce point
+    const [lng, lat] = point.geometry.coordinates;
+    if (lng !== undefined && lat !== undefined) {
+      try {
+        const viewportHeight = window.innerHeight;
+        const offsetY = Math.min(viewportHeight * 0.25, 200);
+
+        if (typeof mapRef.current.easeTo === 'function') {
+          mapRef.current.easeTo({
+            center: [lng, lat],
+            duration: 800,
+            easing: (t) => t * (2 - t),
+            offset: [0, offsetY]
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors du centrage de la carte:', error);
+      }
+    }
+  }, [pointIdToOpenPopup, points]);
 
   const handleMarkerClick = useCallback((event: React.MouseEvent, point: PointFeature) => {
     event.stopPropagation();
@@ -220,9 +252,9 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                 onClick={(e) => handleMarkerClick(e, point)}
                 onMouseEnter={() => onHoverPoint?.(point.properties.id)}
                 onMouseLeave={() => onHoverPoint?.(null)}
-                className={`cursor-pointer transform transition-all bg-white rounded-full shadow-lg border-2 ${
+                className={`cursor-pointer transform transition-all duration-200 bg-white rounded-full shadow-lg border-2 ${
                   isHovered
-                    ? 'scale-150 text-3xl p-3 border-heritage-bordeaux shadow-2xl ring-4 ring-heritage-bordeaux/50'
+                    ? 'scale-125 text-2xl p-2.5 border-heritage-bordeaux shadow-xl ring-2 ring-heritage-bordeaux/40'
                     : 'text-2xl p-2 border-heritage-bordeaux'
                 }`}
                 aria-label={point.properties.title}
@@ -297,11 +329,12 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
       </Map>
 
       {/* Flèche directionnelle - montre l'angle de vue de la photo */}
-      {hoveredPointId && (() => {
-        const hoveredPoint = points.find(p => p.properties.id === hoveredPointId);
-        if (!hoveredPoint) return null;
+      {(() => {
+        // Afficher la flèche pour le point survolé OU le point avec popup ouverte
+        const pointToShowArrow = popupInfo || (hoveredPointId ? points.find(p => p.properties.id === hoveredPointId) : null);
+        if (!pointToShowArrow) return null;
 
-        const [lng, lat] = hoveredPoint.geometry.coordinates;
+        const [lng, lat] = pointToShowArrow.geometry.coordinates;
         if (lng === undefined || lat === undefined) return null;
 
         return (
@@ -309,7 +342,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             mapRef={mapRef}
             longitude={lng}
             latitude={lat}
-            bearing={hoveredPoint.properties.mapboxCamera?.bearing || 0}
+            bearing={pointToShowArrow.properties.mapboxCamera?.bearing || 0}
             visible={true}
           />
         );
@@ -402,7 +435,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           onClick={resetNorth}
           className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded shadow-lg px-3 py-2 transition-colors flex items-center justify-center"
           aria-label="Réinitialiser orientation"
-          title={`Retour au Nord (actuellement : ${getCardinalDirection(bearing)} - ${Math.round(bearing || 0)}°)`}
+          title={`Retour au Nord (actuellement : ${getCardinalDirection(bearing)} - ${Math.round(((bearing % 360) + 360) % 360)}°)`}
         >
           <svg
             className="w-6 h-6 transition-transform duration-300"

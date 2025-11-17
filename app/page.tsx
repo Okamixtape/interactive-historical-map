@@ -19,27 +19,27 @@ export default function HomePage() {
   const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>('all');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [pointIdToOpenPopup, setPointIdToOpenPopup] = useState<string | null>(null);
   const points = (pointsData as PointCollection).features;
 
   // Filtrer les points selon la catégorie active
-  const filteredPoints = activeFilter === 'all' 
-    ? points 
+  const filteredPoints = activeFilter === 'all'
+    ? points
     : points.filter(p => p.properties.category === activeFilter);
 
-  // Handler pour la sélection de POI (depuis sidebar ou marqueur)
-  const handlePOISelect = useCallback((poiId: string) => {
-    const point = points.find(p => p.properties.id === poiId);
-    if (point) {
-      setSelectedPoint(point);
-    }
-  }, [points]);
+  // Handler pour le clic sur carte sidebar - ouvre la popup (nouveau flux UX)
+  const handleSidebarClick = useCallback((poiId: string) => {
+    setPointIdToOpenPopup(poiId);
+    // Reset après un court délai pour permettre de cliquer à nouveau sur la même carte
+    setTimeout(() => setPointIdToOpenPopup(null), 100);
+  }, []);
 
   return (
     <main className="relative">
       {/* Sidebar avec header intégré - passe tous les points pour les counts */}
       <Sidebar
         points={points}
-        onPOISelect={handlePOISelect}
+        onPOISelect={handleSidebarClick}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
         selectedPointId={selectedPoint?.properties.id}
@@ -48,8 +48,8 @@ export default function HomePage() {
       />
 
       {/* Map */}
-      <div 
-        role="region" 
+      <div
+        role="region"
         aria-label="Carte interactive de Limoges"
         className="w-full h-screen"
       >
@@ -61,6 +61,7 @@ export default function HomePage() {
           selectedPoint={selectedPoint}
           onHoverPoint={setHoveredPointId}
           activeFilter={activeFilter}
+          pointIdToOpenPopup={pointIdToOpenPopup}
         />
       </div>
 
