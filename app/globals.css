@@ -69,48 +69,36 @@
 }
 
 /* Slider de zoom vertical - Style custom */
-.zoom-slider {
-  -webkit-appearance: slider-vertical;
+.zoom-slider-vertical {
+  -webkit-appearance: none;
   appearance: none;
   background: transparent;
   outline: none;
   cursor: pointer;
-  width: 6px;
-  height: 120px;
-}
-
-/* Pour Firefox - rotate le slider horizontal pour le rendre vertical */
-@-moz-document url-prefix() {
-  .zoom-slider {
-    width: 120px;
-    height: 6px;
-    transform: rotate(270deg);
-    transform-origin: center;
-  }
 }
 
 /* Track (rail) du slider - Firefox */
-.zoom-slider::-moz-range-track {
+.zoom-slider-vertical::-moz-range-track {
   width: 100%;
-  height: 6px;
+  height: 8px;
   background: #f5f1e8;
-  border-radius: 3px;
+  border-radius: 4px;
   border: 1px solid rgba(184, 134, 11, 0.3);
 }
 
-/* Track (rail) du slider - Webkit (Chrome, Safari) - vertical natif */
-.zoom-slider::-webkit-slider-runnable-track {
-  width: 6px;
-  height: 120px;
+/* Track (rail) du slider - Webkit (Chrome, Safari) */
+.zoom-slider-vertical::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
   background: #f5f1e8;
-  border-radius: 3px;
+  border-radius: 4px;
   border: 1px solid rgba(184, 134, 11, 0.3);
 }
 
 /* Thumb (curseur) du slider - Firefox */
-.zoom-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+.zoom-slider-vertical::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
   background: #6e4027;
   border: 2px solid #b8860b;
   border-radius: 50%;
@@ -119,38 +107,39 @@
   transition: all 0.2s;
 }
 
-.zoom-slider::-moz-range-thumb:hover {
+.zoom-slider-vertical::-moz-range-thumb:hover {
   background: #8B4513;
   transform: scale(1.15);
   box-shadow: 0 3px 8px rgba(110, 64, 39, 0.4);
 }
 
-.zoom-slider::-moz-range-thumb:active {
+.zoom-slider-vertical::-moz-range-thumb:active {
   cursor: grabbing;
   transform: scale(0.95);
 }
 
 /* Thumb (curseur) du slider - Webkit (Chrome, Safari) */
-.zoom-slider::-webkit-slider-thumb {
+.zoom-slider-vertical::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   background: #6e4027;
   border: 2px solid #b8860b;
   border-radius: 50%;
   cursor: grab;
   box-shadow: 0 2px 4px rgba(110, 64, 39, 0.3);
   transition: all 0.2s;
+  margin-top: -6px; /* Centrer le thumb sur le track */
 }
 
-.zoom-slider::-webkit-slider-thumb:hover {
+.zoom-slider-vertical::-webkit-slider-thumb:hover {
   background: #8B4513;
   transform: scale(1.15);
   box-shadow: 0 3px 8px rgba(110, 64, 39, 0.4);
 }
 
-.zoom-slider::-webkit-slider-thumb:active {
+.zoom-slider-vertical::-webkit-slider-thumb:active {
   cursor: grabbing;
   transform: scale(0.95);
 }

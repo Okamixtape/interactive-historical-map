@@ -584,18 +584,29 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             {MAP_ZOOM_LIMITS.maxZoom}
           </span>
 
-          {/* Slider vertical */}
-          <input
-            type="range"
-            min={MAP_ZOOM_LIMITS.minZoom}
-            max={MAP_ZOOM_LIMITS.maxZoom}
-            step="0.1"
-            value={currentZoom}
-            onChange={handleZoomChange}
-            className="zoom-slider"
-            aria-label="Niveau de zoom"
-            title={`Zoom: ${currentZoom.toFixed(1)}`}
-          />
+          {/* Container pour le slider roté */}
+          <div className="relative" style={{ width: '24px', height: '120px' }}>
+            <input
+              type="range"
+              min={MAP_ZOOM_LIMITS.minZoom}
+              max={MAP_ZOOM_LIMITS.maxZoom}
+              step="0.1"
+              value={currentZoom}
+              onChange={handleZoomChange}
+              className="zoom-slider-vertical"
+              aria-label="Niveau de zoom"
+              title={`Zoom: ${currentZoom.toFixed(1)}`}
+              style={{
+                position: 'absolute',
+                width: '120px',
+                height: '24px',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%) rotate(270deg)',
+                transformOrigin: 'center center'
+              }}
+            />
+          </div>
 
           {/* Current zoom value */}
           <div className="flex items-center justify-center bg-heritage-cream rounded px-1.5 py-0.5 min-w-[32px]">
