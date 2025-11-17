@@ -11,6 +11,19 @@ export const INITIAL_VIEW_STATE = {
 
 export const MAP_STYLE = 'mapbox://styles/mapbox/streets-v12';
 
+// Limites géographiques pour Limoges (évite scroll excessif)
+// Southwest: [longitude, latitude], Northeast: [longitude, latitude]
+export const LIMOGES_BOUNDS: [[number, number], [number, number]] = [
+  [1.2, 45.78],   // Southwest (sud-ouest)
+  [1.35, 45.88]   // Northeast (nord-est)
+];
+
+// Limites zoom
+export const MAP_ZOOM_LIMITS = {
+  minZoom: 11,   // Vue région Limoges
+  maxZoom: 18    // Vue détaillée rue
+};
+
 // Catégories de POIs - Source unique de vérité
 export const CATEGORIES = {
   'all': { label: 'Tous', emoji: '📍' },

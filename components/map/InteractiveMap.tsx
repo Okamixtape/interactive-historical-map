@@ -4,7 +4,7 @@ import { useState, useCallback, memo, useRef, useEffect } from 'react';
 import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
-import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji } from '@/lib/constants';
+import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji, LIMOGES_BOUNDS, MAP_ZOOM_LIMITS } from '@/lib/constants';
 import DirectionalArrow from './DirectionalArrow';
 
 interface Props {
@@ -88,6 +88,9 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     const updateBearing = () => {
       setBearing(map.getBearing());
     };
+
+    // ✅ FIX : Initialiser bearing au montage
+    updateBearing();
 
     map.on('rotate', updateBearing);
     return () => {
@@ -181,6 +184,9 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         style={{ width: '100%', height: '100%' }}
         mapStyle={MAP_STYLE}
         mapboxAccessToken={MAPBOX_TOKEN}
+        maxBounds={LIMOGES_BOUNDS}
+        minZoom={MAP_ZOOM_LIMITS.minZoom}
+        maxZoom={MAP_ZOOM_LIMITS.maxZoom}
       >
         {filteredPoints.map((point) => {
           const [lng, lat] = point.geometry.coordinates;

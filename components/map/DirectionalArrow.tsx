@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import type { MapRef } from 'react-map-gl/mapbox';
+import { useThrottle } from '@/hooks/useThrottle';
 
 interface DirectionalArrowProps {
   mapRef: React.RefObject<MapRef>;
@@ -23,40 +24,43 @@ export default function DirectionalArrow({
   const arrowRef = useRef<HTMLDivElement>(null);
 
   // Convertir lng/lat en coordonnées écran (x/y pixels)
+  // ✅ OPTIMISATION : Throttle pour limiter à 60 FPS max
+  const updatePositionRaw = useCallback(() => {
+    try {
+      const map = mapRef.current?.getMap();
+      if (!map) return;
+
+      // Projeter les coordonnées géographiques en pixels écran
+      const point = map.project([longitude, latitude]);
+
+      setPosition({
+        x: point.x,
+        y: point.y
+      });
+    } catch (error) {
+      console.error('Error projecting arrow position:', error);
+    }
+  }, [mapRef, longitude, latitude]);
+
+  const updatePosition = useThrottle(updatePositionRaw, 16); // 60 FPS (1000/60 ≈ 16ms)
+
   useEffect(() => {
-    if (!mapRef.current || !visible) return;
-
-    const updatePosition = () => {
-      try {
-        const map = mapRef.current?.getMap();
-        if (!map) return;
-
-        // Projeter les coordonnées géographiques en pixels écran
-        const point = map.project([longitude, latitude]);
-
-        setPosition({
-          x: point.x,
-          y: point.y
-        });
-      } catch (error) {
-        console.error('Error projecting arrow position:', error);
-      }
-    };
+    if (!mapRef.current || !visible) return undefined;
 
     // Calculer position initiale
-    updatePosition();
+    updatePositionRaw();
 
     // Recalculer quand la carte bouge (pan/zoom/rotate)
     const map = mapRef.current.getMap();
-    
+
     const updateBearing = () => {
       setMapBearing(map.getBearing());
     };
-    
+
     map.on('move', updatePosition);
     map.on('zoom', updatePosition);
     map.on('rotate', updateBearing);
-    
+
     // Init bearing
     updateBearing();
 
@@ -65,7 +69,7 @@ export default function DirectionalArrow({
       map.off('zoom', updatePosition);
       map.off('rotate', updateBearing);
     };
-  }, [mapRef, longitude, latitude, visible]);
+  }, [mapRef, longitude, latitude, visible, updatePosition, updatePositionRaw]);
 
   if (!visible) return null;
 
