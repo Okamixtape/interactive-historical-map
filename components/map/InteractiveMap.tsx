@@ -2,9 +2,9 @@
 
 import { useState, useCallback, memo, useRef, useEffect, useMemo } from 'react';
 import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji, LIMOGES_BOUNDS, MAP_ZOOM_LIMITS, getCardinalDirection } from '@/lib/constants';
+import { loadMapboxCSS } from '@/lib/mapbox-loader';
 
 interface Props {
   points: PointFeature[];
@@ -24,7 +24,15 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const [show3DBuildings, setShow3DBuildings] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(INITIAL_VIEW_STATE.zoom);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [cssLoaded, setCssLoaded] = useState(false);
   const mapRef = useRef<MapRef>(null);
+
+  // Charger le CSS Mapbox de manière asynchrone (améliore LCP)
+  useEffect(() => {
+    loadMapboxCSS()
+      .then(() => setCssLoaded(true))
+      .catch(console.error);
+  }, []);
 
   // Filtrer les points à afficher sur la carte
   const filteredPoints = activeFilter === 'all'
@@ -431,6 +439,18 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
       }
     };
   }, [show3DBuildings]);
+
+  // Afficher un placeholder pendant le chargement du CSS
+  if (!cssLoaded) {
+    return (
+      <div className="relative w-full h-screen bg-heritage-cream flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-heritage-bordeaux border-t-transparent mx-auto mb-4" />
+          <p className="font-serif text-heritage-ink">Chargement de la carte...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen">

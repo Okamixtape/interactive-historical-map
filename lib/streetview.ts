@@ -1,5 +1,8 @@
+import { getCachedStreetViewUrl, cacheStreetViewUrl } from './streetview-cache';
+
 /**
  * Génère une URL pour l'API Google Street View Static
+ * Utilise un cache localStorage pour éviter les requêtes répétées
  * @see https://developers.google.com/maps/documentation/streetview/overview
  */
 export function getStreetViewStaticUrl(
@@ -19,6 +22,14 @@ export function getStreetViewStaticUrl(
     return `https://via.placeholder.com/${width}x${height}/8B4513/FFFAED?text=Street+View+Unavailable`;
   }
 
+  // Vérifier le cache d'abord (côté client uniquement)
+  if (typeof window !== 'undefined') {
+    const cachedUrl = getCachedStreetViewUrl(lat, lng, heading, pitch, fov, width, height);
+    if (cachedUrl) {
+      return cachedUrl;
+    }
+  }
+
   const params = new URLSearchParams({
     size: `${width}x${height}`,
     location: `${lat},${lng}`,
@@ -28,7 +39,14 @@ export function getStreetViewStaticUrl(
     key: apiKey,
   });
 
-  return `https://maps.googleapis.com/maps/api/streetview?${params.toString()}`;
+  const url = `https://maps.googleapis.com/maps/api/streetview?${params.toString()}`;
+
+  // Mettre en cache (côté client uniquement)
+  if (typeof window !== 'undefined') {
+    cacheStreetViewUrl(lat, lng, heading, pitch, fov, width, height, url);
+  }
+
+  return url;
 }
 
 /**
