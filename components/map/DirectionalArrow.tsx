@@ -40,22 +40,22 @@ function DirectionalArrow({
       >
         {/* Flèche directionnelle élégante (heritage-bordeaux) */}
         <svg width="120" height="120" viewBox="0 0 120 120" className="drop-shadow-md">
-          {/* Ligne de la flèche (part du centre du marqueur) */}
+          {/* Ligne de la flèche (part du bas du SVG = centre marqueur avec offset) */}
           <line
             x1="60"
-            y1="60"
+            y1="120"
             x2="60"
-            y2="15"
+            y2="20"
             stroke="#8B4513"
-            strokeWidth="3"
+            strokeWidth="2.5"
             strokeLinecap="round"
-            opacity="0.9"
+            opacity="0.7"
           />
           {/* Pointe de la flèche (triangle) */}
           <path
-            d="M60 10 L68 22 L52 22 Z"
+            d="M60 15 L68 27 L52 27 Z"
             fill="#8B4513"
-            opacity="0.95"
+            opacity="0.75"
           />
         </svg>
       </div>
