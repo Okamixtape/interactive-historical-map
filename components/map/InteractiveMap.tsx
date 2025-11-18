@@ -5,7 +5,6 @@ import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, MAP_STYLE, getCategoryEmoji, LIMOGES_BOUNDS, MAP_ZOOM_LIMITS, getCardinalDirection } from '@/lib/constants';
-import DirectionalArrow from './DirectionalArrow';
 
 interface Props {
   points: PointFeature[];
@@ -31,16 +30,6 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const filteredPoints = activeFilter === 'all'
     ? points
     : points.filter(p => p.properties.category === activeFilter);
-
-  // Mémoïser le point actif pour la flèche (évite re-renders et clignotement)
-  const activeArrowPoint = useMemo(() => {
-    // Priorité : popup ouverte > point survolé
-    if (popupInfo) return popupInfo;
-    if (hoveredPointId) {
-      return points.find(p => p.properties.id === hoveredPointId) || null;
-    }
-    return null;
-  }, [popupInfo, hoveredPointId, points]);
 
   // Cleanup explicite pour compatibilité React StrictMode
   // Résout le problème de double render qui cause accumulation ressources GPU
@@ -113,17 +102,59 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     const point = points.find(p => p.properties.id === pointIdToOpenPopup);
     if (!point) return;
 
-    // Ouvrir la popup
-    setPopupInfo(point);
-
-    // Centrer la carte sur ce point
+    // Centrage intelligent : ne centre que si nécessaire
     const [lng, lat] = point.geometry.coordinates;
     if (lng !== undefined && lat !== undefined) {
       try {
-        const viewportHeight = window.innerHeight;
-        const offsetY = Math.min(viewportHeight * 0.25, 200);
-
-        if (typeof mapRef.current.easeTo === 'function') {
+        const map = mapRef.current.getMap();
+        const bounds = map.getBounds();
+        
+        if (!bounds) return;
+        
+        // Vérifier si le point est visible
+        const isVisible = bounds.contains([lng, lat]);
+        let shouldCenter = !isVisible;
+        
+        if (isVisible) {
+          // Calculer position écran du marqueur
+          const point2D = map.project([lng, lat]);
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+          
+          // Zones à exclure horizontalement
+          const sidebarWidth = 384; // max-w-sm Tailwind (gauche)
+          const controlsWidth = 60; // Boutons navigation (droite)
+          const isSidebarOpen = viewportWidth > 768; // Assume sidebar visible sur desktop
+          
+          // Zone safe : moitié BASSE de l'écran (popup apparaît AU-DESSUS)
+          const safeZoneTop = viewportHeight * 0.5; // 50% bas écran
+          const safeZoneBottom = viewportHeight;
+          
+          // Zone safe horizontale : entre sidebar et boutons
+          const safeZoneLeft = isSidebarOpen ? sidebarWidth : 0;
+          const safeZoneRight = viewportWidth - controlsWidth;
+          
+          // Marges dans la zone safe (15%)
+          const safeWidth = safeZoneRight - safeZoneLeft;
+          const safeHeight = safeZoneBottom - safeZoneTop;
+          const marginX = safeWidth * 0.15;
+          const marginY = safeHeight * 0.15;
+          
+          // Vérifier si marqueur dans zone safe et pas trop proche des bords
+          const isInSafeZone = 
+            point2D.x >= safeZoneLeft + marginX &&
+            point2D.x <= safeZoneRight - marginX &&
+            point2D.y >= safeZoneTop + marginY &&
+            point2D.y <= safeZoneBottom - marginY;
+          
+          shouldCenter = !isInSafeZone;
+        }
+        
+        // Centrer si nécessaire
+        if (shouldCenter && typeof mapRef.current.easeTo === 'function') {
+          const viewportHeight = window.innerHeight;
+          const offsetY = Math.min(viewportHeight * 0.25, 200);
+          
           mapRef.current.easeTo({
             center: [lng, lat],
             duration: 800,
@@ -131,6 +162,11 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             offset: [0, offsetY]
           });
         }
+
+        // Ouvrir la popup après un court délai (laisser voir l'animation si centrage)
+        setTimeout(() => {
+          setPopupInfo(point);
+        }, shouldCenter ? 400 : 0);
       } catch (error) {
         console.error('Erreur lors du centrage de la carte:', error);
       }
@@ -155,21 +191,66 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     event.stopPropagation();
     setPopupInfo(point);
     
-    // Centrage avec espace pour la popup
+    // Centrage intelligent : ne centre que si nécessaire
     const [lng, lat] = point.geometry.coordinates;
     if (mapRef.current && lng !== undefined && lat !== undefined) {
       try {
-        // Calculer l'offset dynamique en fonction de la hauteur de l'écran
-        const viewportHeight = window.innerHeight;
-        const offsetY = Math.min(viewportHeight * 0.25, 200); // 25% de la hauteur ou 200px max
+        const map = mapRef.current.getMap();
+        const bounds = map.getBounds();
         
-        // Vérifier que easeTo existe avant de l'appeler
+        if (!bounds) return;
+        
+        // Vérifier si le point est visible
+        const isVisible = bounds.contains([lng, lat]);
+        
+        if (isVisible) {
+          // Calculer position écran du marqueur
+          const point2D = map.project([lng, lat]);
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+          
+          // Zones à exclure horizontalement
+          const sidebarWidth = 384; // max-w-sm Tailwind (gauche)
+          const controlsWidth = 60; // Boutons navigation (droite)
+          const isSidebarOpen = viewportWidth > 768; // Assume sidebar visible sur desktop
+          
+          // Zone safe : moitié BASSE de l'écran (popup apparaît AU-DESSUS)
+          const safeZoneTop = viewportHeight * 0.5; // 50% bas écran
+          const safeZoneBottom = viewportHeight;
+          
+          // Zone safe horizontale : entre sidebar et boutons
+          const safeZoneLeft = isSidebarOpen ? sidebarWidth : 0;
+          const safeZoneRight = viewportWidth - controlsWidth;
+          
+          // Marges dans la zone safe (15%)
+          const safeWidth = safeZoneRight - safeZoneLeft;
+          const safeHeight = safeZoneBottom - safeZoneTop;
+          const marginX = safeWidth * 0.15;
+          const marginY = safeHeight * 0.15;
+          
+          // Vérifier si marqueur dans zone safe et pas trop proche des bords
+          const isInSafeZone = 
+            point2D.x >= safeZoneLeft + marginX &&
+            point2D.x <= safeZoneRight - marginX &&
+            point2D.y >= safeZoneTop + marginY &&
+            point2D.y <= safeZoneBottom - marginY;
+          
+          // Si dans zone safe, ne pas centrer
+          if (isInSafeZone) {
+            return; // ✅ Garde le contexte, pas de centrage
+          }
+        }
+        
+        // Sinon, centrer avec offset pour la popup
+        const viewportHeight = window.innerHeight;
+        const offsetY = Math.min(viewportHeight * 0.25, 200);
+        
         if (typeof mapRef.current.easeTo === 'function') {
           mapRef.current.easeTo({
             center: [lng, lat],
             duration: 800,
-            easing: (t) => t * (2 - t), // easeOutQuad
-            offset: [0, offsetY] // POSITIF = décale la vue vers le BAS = marqueur monte à l'écran
+            easing: (t) => t * (2 - t),
+            offset: [0, offsetY]
           });
         }
       } catch (error) {
@@ -348,34 +429,16 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         minZoom={MAP_ZOOM_LIMITS.minZoom}
         maxZoom={MAP_ZOOM_LIMITS.maxZoom}
         onMove={handleMapMove}
+        onClick={() => setPopupInfo(null)}
       >
-        {/* Flèche directionnelle indiquant l'angle de prise de vue */}
-        {/* IMPORTANT : Rendue AVANT les marqueurs pour apparaître en dessous */}
-        {activeArrowPoint && (() => {
-          const [lng, lat] = activeArrowPoint.geometry.coordinates;
-          if (lng === undefined || lat === undefined) return null;
-
-          // Utiliser streetView.heading (direction de la caméra)
-          const heading = activeArrowPoint.properties.streetView?.heading ?? 0;
-
-          return (
-            <DirectionalArrow
-              key="directional-arrow"
-              longitude={lng}
-              latitude={lat}
-              bearing={heading}
-              mapBearing={bearing}
-              visible={true}
-            />
-          );
-        })()}
-
         {filteredPoints.map((point) => {
           const [lng, lat] = point.geometry.coordinates;
           if (lng === undefined || lat === undefined) return null;
           
-          // Vérifier si ce marqueur est survolé depuis la sidebar
+          // Vérifier si ce marqueur est survolé depuis la sidebar OU si sa popup est ouverte
           const isHovered = hoveredPointId === point.properties.id;
+          const isPopupOpen = popupInfo?.properties.id === point.properties.id;
+          const isActive = isHovered || isPopupOpen;
 
           return (
             <Marker
@@ -390,7 +453,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                 onMouseEnter={() => onHoverPoint?.(point.properties.id)}
                 onMouseLeave={() => onHoverPoint?.(null)}
                 className={`cursor-pointer transform transition-all duration-200 bg-white rounded-full shadow-lg border-2 ${
-                  isHovered
+                  isActive
                     ? 'scale-125 text-2xl p-2.5 border-heritage-bordeaux shadow-xl ring-2 ring-heritage-bordeaux/40'
                     : 'text-2xl p-2 border-heritage-bordeaux'
                 }`}
@@ -414,33 +477,50 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               closeButton={true}
               closeOnClick={false}
               anchor="bottom"
-              offset={56}
-              className="max-w-sm"
+              offset={80}
+              className="max-w-md"
+              maxWidth="360px"
             >
-            <div className="p-4">
-              {/* Titre avec émoji */}
-              <div className="flex items-start gap-2 mb-3">
-                <span className="text-2xl flex-shrink-0" aria-hidden="true">
-                  {getCategoryEmoji(popupInfo.properties.category)}
-                </span>
-                <div className="flex-1">
-                  <h3 className="font-serif font-bold text-base leading-tight text-heritage-bordeaux mb-1">
-                    {popupInfo.properties.title}
-                  </h3>
-                  <p className="text-xs font-serif text-heritage-ink/70">
-                    {popupInfo.properties.address}
-                  </p>
-                </div>
-              </div>
+            <div className="p-5">
+              {/* Titre + Adresse */}
+              <div className="mb-3">
+                <h3 className="font-serif font-bold text-lg leading-tight text-heritage-bordeaux mb-1.5">
+                  {popupInfo.properties.title}
+                </h3>
+                <p className="text-xs font-serif text-heritage-ink/70 mb-3">
+                  {popupInfo.properties.address}
+                </p>
 
-              {/* Badge année */}
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-heritage-cream border border-heritage-gold/30 rounded mb-3">
-                <svg className="w-3.5 h-3.5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-xs font-serif font-medium text-heritage-ink">
-                  {popupInfo.properties.historical.year}
-                </span>
+                {/* Badges année + direction */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Badge année */}
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-heritage-cream border border-heritage-gold/30 rounded">
+                    <svg className="w-3.5 h-3.5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-xs font-serif font-medium text-heritage-ink">
+                      {popupInfo.properties.historical.year}
+                    </span>
+                  </div>
+
+                  {/* Badge direction objectif */}
+                  {popupInfo.properties.streetView?.heading !== undefined && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-heritage-cream border border-heritage-gold/30 rounded">
+                      <svg 
+                        className="w-3.5 h-3.5 text-heritage-bordeaux" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        style={{ transform: `rotate(${popupInfo.properties.streetView.heading}deg)` }}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0l-7 7m7-7l7 7" />
+                      </svg>
+                      <span className="text-xs font-serif font-medium text-heritage-ink">
+                        Vue {getCardinalDirection(popupInfo.properties.streetView.heading)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Description */}

@@ -38,24 +38,26 @@ function DirectionalArrow({
         }}
         aria-hidden="true"
       >
-        {/* Flèche directionnelle élégante (heritage-bordeaux) */}
+        {/* Indicateur directionnel élégant (heritage-bordeaux) */}
         <svg width="120" height="120" viewBox="0 0 120 120" className="drop-shadow-md">
-          {/* Ligne de la flèche (part du bas du SVG = centre marqueur avec offset) */}
+          {/* Ligne directionnelle (derrière, contexte visuel) */}
           <line
-            x1="60"
-            y1="120"
-            x2="60"
-            y2="20"
+            x1="50"
+            y1="80"
+            x2="50"
+            y2="35"
             stroke="#8B4513"
-            strokeWidth="2.5"
+            strokeWidth="2"
             strokeLinecap="round"
-            opacity="0.7"
+            opacity="0.5"
+            strokeDasharray="4 3"
           />
-          {/* Pointe de la flèche (triangle) */}
+          {/* Triangle inversé pointant vers le sujet photographié */}
           <path
-            d="M60 15 L68 27 L52 27 Z"
+            d="M50 28 L42 40 L58 40 Z"
             fill="#8B4513"
-            opacity="0.75"
+            opacity="0.85"
+            className="drop-shadow-sm"
           />
         </svg>
       </div>
