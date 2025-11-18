@@ -35,7 +35,7 @@ export function loadMapboxCSS(): Promise<void> {
     // Créer et injecter le lien CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css';
+    link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.16.0/mapbox-gl.css';
     link.crossOrigin = 'anonymous';
 
     link.onload = () => {
