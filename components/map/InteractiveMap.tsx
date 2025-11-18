@@ -31,6 +31,21 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
     ? points
     : points.filter(p => p.properties.category === activeFilter);
 
+  // Ouvrir popup au hover depuis sidebar (comportement unifié)
+  useEffect(() => {
+    if (!hoveredPointId) {
+      // Si plus de hover, ne fermer la popup QUE si elle était ouverte par hover (pas par clic)
+      // On garde la popup si elle a été ouverte par clic
+      return;
+    }
+
+    // Trouver le point survolé
+    const hoveredPoint = points.find(p => p.properties.id === hoveredPointId);
+    if (hoveredPoint) {
+      setPopupInfo(hoveredPoint);
+    }
+  }, [hoveredPointId, points]);
+
   // Cleanup explicite pour compatibilité React StrictMode
   // Résout le problème de double render qui cause accumulation ressources GPU
   useEffect(() => {
