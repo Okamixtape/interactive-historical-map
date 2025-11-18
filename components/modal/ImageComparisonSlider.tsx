@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
-import { useState } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { PointFeature } from '@/lib/types';
 import { getStreetViewStaticUrl } from '@/lib/streetview';
 
@@ -12,6 +12,35 @@ interface Props {
 export function ImageComparisonSlider({ point }: Props) {
   const { properties } = point;
   const [sliderPosition, setSliderPosition] = useState(50);
+  const sliderContainerRef = useRef<HTMLDivElement>(null);
+
+  // Gestion clavier pour les touches flèches
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const step = e.shiftKey ? 10 : 5; // Shift = pas plus grand
+
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSliderPosition(prev => Math.max(0, prev - step));
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSliderPosition(prev => Math.min(100, prev + step));
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setSliderPosition(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setSliderPosition(100);
+    }
+  }, []);
+
+  // Attacher les événements clavier au container
+  useEffect(() => {
+    const container = sliderContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener('keydown', handleKeyDown);
+    return () => container.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // Déterminer l'orientation de la photo (portrait ou paysage)
   const isPortrait = properties.historical.orientation === 'portrait';
@@ -61,7 +90,10 @@ export function ImageComparisonSlider({ point }: Props) {
 
       {/* Slider de comparaison */}
       {/* Format adaptatif : 3:4 (portrait) ou 2:1 (paysage) */}
-      <div className={`relative ${aspectRatio} ${maxWidth} ${isPortrait ? 'mx-auto' : ''} rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg`}>
+      <div
+        ref={sliderContainerRef}
+        className={`relative ${aspectRatio} ${maxWidth} ${isPortrait ? 'mx-auto' : ''} rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg`}
+      >
         <ReactCompareSlider
           position={sliderPosition}
           onPositionChange={setSliderPosition}
@@ -149,7 +181,7 @@ export function ImageComparisonSlider({ point }: Props) {
             className="inline-flex items-center gap-1 text-heritage-bordeaux hover:text-heritage-ink underline"
           >
             <span>Voir en interactif</span>
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
           </a>

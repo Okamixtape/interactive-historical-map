@@ -510,7 +510,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* Badge année */}
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-heritage-cream border border-heritage-gold/30 rounded">
-                    <svg className="w-3.5 h-3.5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span className="text-xs font-serif font-medium text-heritage-ink">
@@ -521,12 +521,13 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                   {/* Badge direction objectif */}
                   {popupInfo.properties.streetView?.heading !== undefined && (
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-heritage-cream border border-heritage-gold/30 rounded">
-                      <svg 
-                        className="w-3.5 h-3.5 text-heritage-bordeaux" 
-                        fill="none" 
-                        stroke="currentColor" 
+                      <svg
+                        className="w-3.5 h-3.5 text-heritage-bordeaux"
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                         style={{ transform: `rotate(${popupInfo.properties.streetView.heading}deg)` }}
+                        aria-hidden="true"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0l-7 7m7-7l7 7" />
                       </svg>
@@ -549,7 +550,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                 className="w-full bg-heritage-bordeaux text-heritage-cream px-4 py-2.5 rounded border-2 border-heritage-gold/40 hover:bg-heritage-ink hover:shadow-vintage transition-all text-sm font-serif font-medium flex items-center justify-center gap-2"
               >
                 {/* Icône comparaison avant/après (slider) */}
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   {/* Rectangle divisé en deux */}
                   <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2"/>
                   {/* Ligne de séparation verticale avec slider */}
@@ -575,7 +576,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             aria-label="Afficher les raccourcis clavier"
             title="Raccourcis clavier et contrôles"
           >
-            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </button>
@@ -592,13 +593,13 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           </span>
           {is3DView ? (
             // Icône plan 2D (carte plate vue du dessus)
-            <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <rect x="3" y="3" width="18" height="18" strokeWidth={2} rx="1" />
               <path d="M3 9h18M3 15h18M9 3v18M15 3v18" strokeWidth={1.5} opacity="0.5" />
             </svg>
           ) : (
             // Icône cube 3D
-            <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           )}
@@ -618,7 +619,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           aria-label={!is3DView ? "Bâtiments 3D (disponible en mode 3D uniquement)" : show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
           title={!is3DView ? "Activez d'abord le mode 3D pour afficher les bâtiments" : show3DBuildings ? "Masquer les bâtiments 3D" : "Afficher les bâtiments 3D"}
         >
-          <svg className={`w-4 h-4 ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
           <span className={`font-serif text-xs font-medium ${!is3DView ? 'text-gray-400' : 'text-heritage-bordeaux'}`}>
@@ -635,7 +636,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             aria-label="Zoom avant"
             title="Zoom avant"
           >
-            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -647,7 +648,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             aria-label="Zoom arrière"
             title="Zoom arrière"
           >
-            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
             </svg>
           </button>
@@ -662,7 +663,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             aria-label="Rotation gauche"
             title="Rotation gauche (15°)"
           >
-            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 3v5h-5" />
             </svg>
@@ -675,7 +676,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
             aria-label="Rotation droite"
             title="Rotation droite (15°)"
           >
-            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v5h5" />
             </svg>
@@ -832,7 +833,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
                 className="text-heritage-ink/50 hover:text-heritage-bordeaux transition-colors"
                 aria-label="Fermer"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
