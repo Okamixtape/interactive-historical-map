@@ -446,7 +446,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               longitude={lng}
               latitude={lat}
               anchor="bottom"
-              style={{ zIndex: 10 }}
+              style={{ zIndex: 5 }}
             >
               <button
                 onClick={(e) => handleMarkerClick(e, point)}
@@ -478,7 +478,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               closeOnClick={false}
               anchor="bottom"
               offset={80}
-              className="max-w-md"
+              className="max-w-md z-10"
               maxWidth="360px"
             >
             <div className="p-5">
