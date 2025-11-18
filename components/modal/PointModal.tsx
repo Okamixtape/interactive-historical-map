@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import type { PointFeature } from '@/lib/types';
 import { getCategoryEmoji, getCategoryLabel } from '@/lib/constants';
 import { ImageComparisonSlider } from './ImageComparisonSlider';
@@ -13,6 +13,9 @@ interface Props {
 
 export default function PointModal({ point, onClose }: Props) {
   const [isClosing, setIsClosing] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
 
   // Fermer avec animation
   const handleClose = useCallback(() => {
@@ -22,21 +25,55 @@ export default function PointModal({ point, onClose }: Props) {
     }, 200); // Durée de l'animation
   }, [onClose]);
 
-  // Fermer avec la touche Escape
+  // Fermer avec la touche Escape + Focus trap + Gestion du focus
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    // Stocker l'élément précédemment focusé
+    previouslyFocusedElement.current = document.activeElement as HTMLElement;
+
+    // Focus le bouton fermer au montage
+    setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 100);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         handleClose();
+        return;
+      }
+
+      // Focus trap - garder le focus dans la modal
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          // Shift+Tab : si on est sur le premier élément, aller au dernier
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement?.focus();
+          }
+        } else {
+          // Tab : si on est sur le dernier élément, aller au premier
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement?.focus();
+          }
+        }
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleKeyDown);
     // Désactiver le scroll du body
     document.body.style.overflow = 'hidden';
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
+      // Restaurer le focus sur l'élément précédent
+      previouslyFocusedElement.current?.focus();
     };
   }, [handleClose]);
 
@@ -50,6 +87,7 @@ export default function PointModal({ point, onClose }: Props) {
 
   return (
     <div
+      ref={modalRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
@@ -84,8 +122,9 @@ export default function PointModal({ point, onClose }: Props) {
               </div>
             </div>
             <button
+              ref={closeButtonRef}
               onClick={handleClose}
-              className="flex-shrink-0 text-heritage-cream hover:text-heritage-gold transition-colors p-2 rounded hover:bg-heritage-cream/10"
+              className="flex-shrink-0 text-heritage-cream hover:text-heritage-gold transition-colors p-2 rounded hover:bg-heritage-cream/10 focus:outline-none focus:ring-2 focus:ring-heritage-gold"
               aria-label="Fermer la modal"
             >
               <svg
@@ -96,6 +135,7 @@ export default function PointModal({ point, onClose }: Props) {
                 strokeWidth="2"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path d="M6 18L18 6M6 6l12 12" />
               </svg>

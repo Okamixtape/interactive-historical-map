@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [],
+    domains: ['maps.googleapis.com'],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -19,12 +19,12 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://api.mapbox.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://api.mapbox.com https://vercel.live",
               "style-src 'self' 'unsafe-inline' https://api.mapbox.com",
               "img-src 'self' data: blob: https://*.mapbox.com https://*.googleapis.com",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com",
-              "frame-src 'self' https://www.google.com",
+              "connect-src 'self' https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com https://vercel.live wss://ws-us3.pusher.com",
+              "frame-src 'self' https://www.google.com https://vercel.live",
               "worker-src 'self' blob:",
             ].join('; '),
           },

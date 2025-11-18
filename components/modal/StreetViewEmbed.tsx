@@ -45,6 +45,7 @@ export function StreetViewEmbed({
       referrerPolicy="no-referrer-when-downgrade"
       title="Google Street View"
       allow="accelerometer; gyroscope; fullscreen"
+      sandbox="allow-same-origin allow-scripts allow-presentation"
     />
   );
 }
