@@ -14,6 +14,7 @@ export interface PointProperties {
     imageUrl: string;
     source: string;
     archiveReference?: string;
+    orientation?: 'portrait' | 'landscape'; // Format de la photo d'archive
   };
 
   streetView: {

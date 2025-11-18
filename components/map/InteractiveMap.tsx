@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, memo, useRef, useEffect } from 'react';
+import { useState, useCallback, memo, useRef, useEffect, useMemo } from 'react';
 import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { PointFeature } from '@/lib/types';
@@ -31,6 +31,16 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
   const filteredPoints = activeFilter === 'all'
     ? points
     : points.filter(p => p.properties.category === activeFilter);
+
+  // Mémoïser le point actif pour la flèche (évite re-renders et clignotement)
+  const activeArrowPoint = useMemo(() => {
+    // Priorité : popup ouverte > point survolé
+    if (popupInfo) return popupInfo;
+    if (hoveredPointId) {
+      return points.find(p => p.properties.id === hoveredPointId) || null;
+    }
+    return null;
+  }, [popupInfo, hoveredPointId, points]);
 
   // Cleanup explicite pour compatibilité React StrictMode
   // Résout le problème de double render qui cause accumulation ressources GPU
@@ -339,6 +349,27 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
         maxZoom={MAP_ZOOM_LIMITS.maxZoom}
         onMove={handleMapMove}
       >
+        {/* Flèche directionnelle indiquant l'angle de prise de vue */}
+        {/* IMPORTANT : Rendue AVANT les marqueurs pour apparaître en dessous */}
+        {activeArrowPoint && (() => {
+          const [lng, lat] = activeArrowPoint.geometry.coordinates;
+          if (lng === undefined || lat === undefined) return null;
+
+          // Utiliser streetView.heading (direction de la caméra)
+          const heading = activeArrowPoint.properties.streetView?.heading ?? 0;
+
+          return (
+            <DirectionalArrow
+              key="directional-arrow"
+              longitude={lng}
+              latitude={lat}
+              bearing={heading}
+              mapBearing={bearing}
+              visible={true}
+            />
+          );
+        })()}
+
         {filteredPoints.map((point) => {
           const [lng, lat] = point.geometry.coordinates;
           if (lng === undefined || lat === undefined) return null;
@@ -352,6 +383,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
               longitude={lng}
               latitude={lat}
               anchor="bottom"
+              style={{ zIndex: 10 }}
             >
               <button
                 onClick={(e) => handleMarkerClick(e, point)}
@@ -438,58 +470,20 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           </Popup>
           );
         })()}
-      </Map>
 
-      {/* 
-        TODO: Flèche directionnelle - montre l'angle de vue de la photo
-        Désactivée temporairement car pas assez intuitive visuellement.
-        À retravailler avec une meilleure UX (pulse, badge angle, etc.)
-        
-        Code conservé pour référence :
-        
-        {(() => {
-          // ✅ SÉCURITÉ : Afficher la flèche uniquement pour les points visibles
-          // Priorité : popup ouverte > point survolé (mais seulement si visible dans le filtre)
-          let pointToShowArrow = null;
-
-          if (popupInfo) {
-            // Si popup ouverte, utiliser ce point (déjà vérifié par l'useEffect ci-dessus)
-            pointToShowArrow = popupInfo;
-          } else if (hoveredPointId) {
-            // Sinon, chercher le point survolé UNIQUEMENT dans les points filtrés
-            pointToShowArrow = filteredPoints.find(p => p.properties.id === hoveredPointId) || null;
-          }
-
-          if (!pointToShowArrow) return null;
-
-          const [lng, lat] = pointToShowArrow.geometry.coordinates;
-          if (lng === undefined || lat === undefined) return null;
-
-          return (
-            <DirectionalArrow
-              mapRef={mapRef}
-              longitude={lng}
-              latitude={lat}
-              bearing={pointToShowArrow.properties.mapboxCamera?.bearing || 0}
-              visible={true}
-            />
-          );
-        })()}
-      */}
-
-      {/* Contrôles en haut à droite */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
-        {/* Bouton Info Shortcuts */}
-        <button
-          onClick={() => setShowShortcutsModal(true)}
-          className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded-full shadow-lg w-10 h-10 transition-colors flex items-center justify-center self-center"
-          aria-label="Afficher les raccourcis clavier"
-          title="Raccourcis clavier et contrôles"
-        >
-          <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </button>
+        {/* Contrôles en haut à droite */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+          {/* Bouton Info Shortcuts */}
+          <button
+            onClick={() => setShowShortcutsModal(true)}
+            className="bg-white hover:bg-heritage-cream border-2 border-heritage-gold/40 rounded-full shadow-lg w-10 h-10 transition-colors flex items-center justify-center self-center"
+            aria-label="Afficher les raccourcis clavier"
+            title="Raccourcis clavier et contrôles"
+          >
+            <svg className="w-5 h-5 text-heritage-bordeaux" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
 
         {/* Bouton Toggle 3D */}
         <button
@@ -721,6 +715,7 @@ function InteractiveMap({ points, onPointSelect, hoveredPointId, onTransitionSta
           </svg>
         </button>
       </div>
+      </Map>
 
       {/* Modal Shortcuts */}
       {showShortcutsModal && (

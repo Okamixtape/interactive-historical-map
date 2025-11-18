@@ -13,15 +13,28 @@ export function ImageComparisonSlider({ point }: Props) {
   const { properties } = point;
   const [sliderPosition, setSliderPosition] = useState(50);
 
+  // Déterminer l'orientation de la photo (portrait ou paysage)
+  const isPortrait = properties.historical.orientation === 'portrait';
+  
+  // Dimensions adaptées selon l'orientation
+  // Portrait : 360×480 (ratio 3:4, optimisé pour modal)
+  // Paysage : 640×320 (ratio 2:1)
+  const [width, height] = isPortrait ? [360, 480] : [640, 320];
+  
+  // Aspect ratio CSS correspondant + largeur max pour portrait
+  const aspectRatio = isPortrait ? 'aspect-[3/4]' : 'aspect-[2/1]';
+  const maxWidth = isPortrait ? 'max-w-sm' : ''; // max-w-sm = 384px (limite hauteur à ~512px)
+
   // Générer l'URL Street View statique (optimisée pour le slider)
+  // IMPORTANT : Google Street View Static API limite gratuite = 640×640px max
   const streetViewUrl = getStreetViewStaticUrl(
     properties.streetView.latitude,
     properties.streetView.longitude,
     properties.streetView.heading ?? 0,
     properties.streetView.pitch ?? 0,
     properties.streetView.fov ?? 90,
-    1280, // Width HD pour qualité
-    960   // Height HD (ratio 4:3)
+    width,
+    height
   );
 
   return (
@@ -47,7 +60,8 @@ export function ImageComparisonSlider({ point }: Props) {
       </div>
 
       {/* Slider de comparaison */}
-      <div className="relative aspect-[16/9] rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg">
+      {/* Format adaptatif : 3:4 (portrait) ou 2:1 (paysage) */}
+      <div className={`relative ${aspectRatio} ${maxWidth} ${isPortrait ? 'mx-auto' : ''} rounded border-2 border-heritage-gold/30 overflow-hidden shadow-vintage-lg`}>
         <ReactCompareSlider
           position={sliderPosition}
           onPositionChange={setSliderPosition}
@@ -100,7 +114,10 @@ export function ImageComparisonSlider({ point }: Props) {
 
         {/* Indicateur de position */}
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-heritage-bordeaux/90 text-heritage-cream text-xs font-serif rounded border border-heritage-gold/50 pointer-events-none">
-          {Math.round(sliderPosition)}% historique
+          {sliderPosition > 50 
+            ? properties.historical.year
+            : '2024'
+          }
         </div>
       </div>
 
